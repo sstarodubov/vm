@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'org.graalvm.buildtools.native' version '0.10.2'
+}
+
+group = 'org.starodubov'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+graalvmNative {
+    binaries {
+        main {
+            mainClass.set("org.starodubov.Main")
+            buildArgs('-o', 'vm')
+        }
+    }
+    toolchainDetection = false
+}
+test {
+    useJUnitPlatform()
+}
