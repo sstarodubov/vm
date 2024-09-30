@@ -1,6 +1,5 @@
 package org.starodubov.vm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.starodubov.vm.OpCodes.OP_CONST;
-import static org.starodubov.vm.OpCodes.OP_HALT;
+import static org.starodubov.vm.OpCodes.*;
 
 public class VmTest {
 
@@ -22,14 +20,82 @@ public class VmTest {
         vm = new Vm();
         constants = new ArrayList<>();
     }
+
     @Test
     void givenNumber_whenExec_thenReturnSuccess() {
-        constants.add(Value.NUMBER(45));
-        bytecode = new byte[] {
-                OP_CONST, 0,
+        constants = List.of(Value.NUMBER(45), Value.NUMBER(99));
+        bytecode = new byte[]{
+                OP_CONST, 1,
                 OP_HALT
         };
 
-        assertEquals(45, vm.exec(bytecode, constants).number());
+        assertEquals(99, vm.exec(bytecode, constants).number());
+    }
+
+    @Test
+    void givenNumbers_whenAdd_thenReturnCorrectResult() {
+        constants = List.of(Value.NUMBER(2), Value.NUMBER(3));
+        bytecode = new byte[]{
+                OP_CONST, 1,
+                OP_CONST, 0,
+                OP_ADD,
+                OP_HALT
+        };
+
+        assertEquals(5L, vm.exec(bytecode, constants).number());
+    }
+
+    @Test
+    void givenNumbers_whenSub_thenReturnCorrectResult() {
+        constants = List.of(Value.NUMBER(2), Value.NUMBER(3));
+        bytecode = new byte[]{
+                OP_CONST, 1,
+                OP_CONST, 0,
+                OP_SUB,
+                OP_HALT
+        };
+
+        assertEquals(-1L, vm.exec(bytecode, constants).number());
+    }
+
+    @Test
+    void givenNumbers_whenMul_thenReturnCorrectResult() {
+        constants = List.of(Value.NUMBER(2), Value.NUMBER(3));
+        bytecode = new byte[]{
+                OP_CONST, 1,
+                OP_CONST, 0,
+                OP_MUL,
+                OP_HALT
+        };
+
+        assertEquals(6L, vm.exec(bytecode, constants).number());
+    }
+
+    @Test
+    void givenNumbers_whenDiv_thenReturnCorrectResult() {
+        constants = List.of(Value.NUMBER(6), Value.NUMBER(3));
+        bytecode = new byte[]{
+                OP_CONST, 1,
+                OP_CONST, 0,
+                OP_DIV,
+                OP_HALT
+        };
+
+        assertEquals(2L, vm.exec(bytecode, constants).number());
+    }
+
+
+    @Test
+    void givenNumbers_whenComplexOps_thenReturnCorrectResult() {
+        constants = List.of(
+                Value.NUMBER(6), Value.NUMBER(3), Value.NUMBER(8)
+        );
+        bytecode = new byte[]{
+                OP_CONST, 1, OP_CONST, 0, OP_DIV,
+                OP_CONST, 2, OP_ADD,
+                OP_HALT
+        };
+
+        assertEquals(10L, vm.exec(bytecode, constants).number());
     }
 }

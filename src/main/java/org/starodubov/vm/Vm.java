@@ -1,11 +1,11 @@
 package org.starodubov.vm;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
-import static org.starodubov.vm.OpCodes.OP_CONST;
-import static org.starodubov.vm.OpCodes.OP_HALT;
+import static org.starodubov.vm.OpCodes.*;
 
-//4 number introduction
+//5
 
 public class Vm {
 
@@ -38,21 +38,31 @@ public class Vm {
         this.constants = constants;
 
         byte execOp;
-        for (;;) {
+        for (; ; ) {
             execOp = readByte();
             switch (execOp) {
                 case OP_HALT -> {
                     return pop();
                 }
                 case OP_CONST -> push(getConst());
-                default ->
-                        throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
+                case OP_ADD -> mathOp(Long::sum);
+                case OP_SUB -> mathOp((a, b) -> a - b);
+                case OP_MUL -> mathOp((a, b) -> a * b);
+                case OP_DIV -> mathOp((a, b) -> a / b);
+                default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
         }
     }
 
+    void mathOp(final BiFunction<Long, Long, Long> mathFun) {
+        final long oper1 = Value.AS_NUMBER(pop());
+        final long oper2 = Value.AS_NUMBER(pop());
+        final long result = mathFun.apply(oper1, oper2);
+        push(Value.NUMBER(result));
+    }
+
     byte readByte() {
-       return code[ip++];
+        return code[ip++];
     }
 
     Value getConst() {
