@@ -55,7 +55,7 @@ class Exp {
     public Exp(String strVal) {
         if (strVal.charAt(0) == '"') {
             type = ExpType.STRING;
-            string = strVal.substring(1, strVal.length() - 2);
+            string = strVal.substring(1, strVal.length() - 1);
         } else {
             type = ExpType.SYMBOL;
             string = strVal;
@@ -256,10 +256,9 @@ class Tokenizer {
         put("NUMBER", 4);
         put("STRING", 5);
         put("SYMBOL", 6);
-        put("&", 7);
-        put("'('", 8);
-        put("')'", 9);
-        put("$", 10);
+        put("'('", 7);
+        put("')'", 8);
+        put("$", 9);
     }};
 
     /**
@@ -650,7 +649,6 @@ public class Parser {
             {1, 1},
             {1, 1},
             {1, 1},
-            {1, 1},
             {2, 3},
             {3, 2},
             {3, 0}
@@ -664,7 +662,7 @@ public class Parser {
      *   mProductionHandlerMethods[0] = Parser.class.getDeclaredMethod("_handler0");
      *   ...
      */
-    private static final Method[] mProductionHandlerMethods = new Method[10];
+    private static final Method[] mProductionHandlerMethods = new Method[9];
 
     static {
         try {
@@ -677,7 +675,6 @@ public class Parser {
             mProductionHandlerMethods[6] = Parser.class.getDeclaredMethod("_handler6");
             mProductionHandlerMethods[7] = Parser.class.getDeclaredMethod("_handler7");
             mProductionHandlerMethods[8] = Parser.class.getDeclaredMethod("_handler8");
-            mProductionHandlerMethods[9] = Parser.class.getDeclaredMethod("_handler9");
         } catch (Exception ignore) {
             // Ignore since the methods are exact.
         }
@@ -714,10 +711,9 @@ public class Parser {
             put(5, "s5");
             put(6, "s6");
             put(7, "s7");
-            put(8, "s8");
         }});
         mTable.add(new HashMap<Integer, String>() {{
-            put(10, "acc");
+            put(9, "acc");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r1");
@@ -726,7 +722,6 @@ public class Parser {
             put(7, "r1");
             put(8, "r1");
             put(9, "r1");
-            put(10, "r1");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r2");
@@ -735,7 +730,6 @@ public class Parser {
             put(7, "r2");
             put(8, "r2");
             put(9, "r2");
-            put(10, "r2");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r3");
@@ -744,7 +738,6 @@ public class Parser {
             put(7, "r3");
             put(8, "r3");
             put(9, "r3");
-            put(10, "r3");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r4");
@@ -753,7 +746,6 @@ public class Parser {
             put(7, "r4");
             put(8, "r4");
             put(9, "r4");
-            put(10, "r4");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r5");
@@ -762,7 +754,24 @@ public class Parser {
             put(7, "r5");
             put(8, "r5");
             put(9, "r5");
-            put(10, "r5");
+        }});
+        mTable.add(new HashMap<Integer, String>() {{
+            put(3, "8");
+            put(4, "r8");
+            put(5, "r8");
+            put(6, "r8");
+            put(7, "r8");
+            put(8, "r8");
+        }});
+        mTable.add(new HashMap<Integer, String>() {{
+            put(0, "10");
+            put(1, "2");
+            put(2, "3");
+            put(4, "s4");
+            put(5, "s5");
+            put(6, "s6");
+            put(7, "s7");
+            put(8, "s9");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r6");
@@ -771,27 +780,6 @@ public class Parser {
             put(7, "r6");
             put(8, "r6");
             put(9, "r6");
-            put(10, "r6");
-        }});
-        mTable.add(new HashMap<Integer, String>() {{
-            put(3, "9");
-            put(4, "r9");
-            put(5, "r9");
-            put(6, "r9");
-            put(7, "r9");
-            put(8, "r9");
-            put(9, "r9");
-        }});
-        mTable.add(new HashMap<Integer, String>() {{
-            put(0, "11");
-            put(1, "2");
-            put(2, "3");
-            put(4, "s4");
-            put(5, "s5");
-            put(6, "s6");
-            put(7, "s7");
-            put(8, "s8");
-            put(9, "s10");
         }});
         mTable.add(new HashMap<Integer, String>() {{
             put(4, "r7");
@@ -799,16 +787,6 @@ public class Parser {
             put(6, "r7");
             put(7, "r7");
             put(8, "r7");
-            put(9, "r7");
-            put(10, "r7");
-        }});
-        mTable.add(new HashMap<Integer, String>() {{
-            put(4, "r8");
-            put(5, "r8");
-            put(6, "r8");
-            put(7, "r8");
-            put(8, "r8");
-            put(9, "r8");
         }});
     }
 
@@ -906,13 +884,6 @@ public class Parser {
 
     void _handler6() {
         // Semantic values prologue.
-        StackEntry _1 = mValueStack.pop();
-
-        __.semanticValue = (_1.semanticValue);
-    }
-
-    void _handler7() {
-        // Semantic values prologue.
         mValueStack.pop();
         StackEntry _2 = mValueStack.pop();
         mValueStack.pop();
@@ -920,7 +891,7 @@ public class Parser {
         __.semanticValue = (_2.semanticValue);
     }
 
-    void _handler8() {
+    void _handler7() {
         // Semantic values prologue.
         StackEntry _2 = mValueStack.pop();
         StackEntry _1 = mValueStack.pop();
@@ -929,7 +900,7 @@ public class Parser {
         __.semanticValue = (_1.semanticValue);
     }
 
-    void _handler9() {
+    void _handler8() {
         // Semantic values prologue.
 
 

@@ -1,17 +1,6 @@
 /**
- * Eva programming language.
  *
- * VM implementation.
- *
- * Course info: http://dmitrysoshnikov.com/courses/virtual-machine/
- *
- * (C) 2021-present Dmitry Soshnikov <dmitry.soshnikov@gmail.com>
- */
-
-/**
- * Eva grammar (S-expression).
- *
- * syntax-cli -g src/parser/EvaGrammar.bnf -m LALR1 -o src/parser/EvaParser.h
+ * syntax-cli -g src/parser/EvaGrammar.bnf -m LALR1 -o src/parser/EvaParser.java
  *
  * Examples:
  *
@@ -69,7 +58,7 @@ class Exp {
     public Exp(String strVal) {
         if (strVal.charAt(0) == '"') {
             type = ExpType.STRING;
-            string = strVal.substring(1, strVal.length() - 2);
+            string = strVal.substring(1, strVal.length() - 1);
         } else {
             type = ExpType.SYMBOL;
             string = strVal;
@@ -94,7 +83,6 @@ Atom
   : NUMBER { $$ = new Exp(Integer.parseInt(String.valueOf($1))) }
   | STRING { $$ = new Exp(String.valueOf($1)) }
   | SYMBOL { $$ = new Exp(String.valueOf($1)) }
-  | &
   ;
 
 List

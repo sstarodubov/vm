@@ -10,15 +10,18 @@ public class Main {
         var parser = new Parser();
         Object helloWorld = parser.parse(
                 """
-                        (+ "hello" 2)
+                        (print "hello world")
                         """
         );
 
+        /*
         var vm = new Vm();
         vm.exec("""
                 
                 42
                 
                 """);
+
+         */
     }
 }
