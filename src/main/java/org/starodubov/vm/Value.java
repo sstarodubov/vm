@@ -2,17 +2,29 @@ package org.starodubov.vm;
 
 public record Value(
         ValueTypes type,
-        Object number
+        Object obj
 ) {
-    public static <T extends Number> Value NUMBER(T number) {
+    public static <T extends Number> Value number(T number) {
         return new Value(ValueTypes.NUMBER, number);
     }
 
-    public static long AS_NUMBER(Value val) {
-        if (val.number instanceof Number longNumber) {
-            return longNumber.longValue();
-        }
+    public static <T extends String> Value string(T string) {
+        return new Value(ValueTypes.STRING, string);
+    }
 
-        throw new IllegalStateException("val.number() %s is not a number".formatted(val.number));
+    public static long as_number(Value val) {
+        if (val.obj instanceof Number longNumber) {
+            return longNumber.longValue();
+        } else {
+            throw new IllegalStateException("obj.obj() %s is not a obj".formatted(val.obj));
+        }
+    }
+
+    public static String as_string(Value val) {
+        return as(val, String.class);
+    }
+
+    public static <T> T as(Value val, Class<T> type) {
+        return type.cast(val.obj);
     }
 }

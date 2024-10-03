@@ -5,8 +5,6 @@ import java.util.function.BiFunction;
 
 import static org.starodubov.vm.OpCodes.*;
 
-//5
-
 public class Vm {
 
     void push(Value v) {
@@ -45,7 +43,21 @@ public class Vm {
                     return pop();
                 }
                 case OP_CONST -> push(getConst());
-                case OP_ADD -> mathOp(Long::sum);
+                case OP_ADD -> {
+                    final Value oper1 = pop();
+                    final Value oper2 = pop();
+                    if (oper1.type() == ValueTypes.STRING && oper2.type() == ValueTypes.STRING) {
+                        final String t = Value.as_string(oper2) + Value.as_string(oper1);
+                        push(Value.string(t));
+                    } else if (oper1.type() == ValueTypes.NUMBER && oper2.type() == ValueTypes.NUMBER) {
+                        final long t = Value.as_number(oper1) + Value.as_number(oper2);
+                        push(Value.number(t));
+                    } else {
+                        throw new IllegalStateException("cannot exec '%s' + '%s'".formatted(
+                                oper1, oper2
+                        ));
+                    }
+                }
                 case OP_SUB -> mathOp((a, b) -> a - b);
                 case OP_MUL -> mathOp((a, b) -> a * b);
                 case OP_DIV -> mathOp((a, b) -> a / b);
@@ -55,10 +67,10 @@ public class Vm {
     }
 
     void mathOp(final BiFunction<Long, Long, Long> mathFun) {
-        final long oper1 = Value.AS_NUMBER(pop());
-        final long oper2 = Value.AS_NUMBER(pop());
+        final long oper1 = Value.as_number(pop());
+        final long oper2 = Value.as_number(pop());
         final long result = mathFun.apply(oper1, oper2);
-        push(Value.NUMBER(result));
+        push(Value.number(result));
     }
 
     byte readByte() {

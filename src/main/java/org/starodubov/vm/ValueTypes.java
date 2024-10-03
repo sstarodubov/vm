@@ -1,5 +1,6 @@
 package org.starodubov.vm;
 
 public enum ValueTypes {
-    NUMBER
+    NUMBER,
+    STRING
 }

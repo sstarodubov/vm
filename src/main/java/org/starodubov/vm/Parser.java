@@ -214,7 +214,7 @@ class Token {
  *
  * For state-based tokenizer, also:
  *
- * - getCurrentState(): number
+ * - getCurrentState(): obj
  * - pushState(String stateName): void
  * - popState(): void
  * - begin(String stateName): void - alias for pushState
@@ -242,8 +242,8 @@ class Tokenizer {
     public static String EOF = "$";
 
     /**
-     * Maps a String name of a token type to its encoded number (the first
-     * token number starts after all numbers for non-terminal).
+     * Maps a String name of a token type to its encoded obj (the first
+     * token obj starts after all numbers for non-terminal).
      *
      * Example:
      *
@@ -684,10 +684,10 @@ public class Parser {
 
     /**
      * Actual parsing table. An array of records, where
-     * index is a state number, and a value is a dictionary
-     * from an encoded symbol (number) to parsing action.
+     * index is a state obj, and a value is a dictionary
+     * from an encoded symbol (obj) to parsing action.
      * The parsing action can be "Shift/s", "Reduce/r", a state
-     * transition number, or "Accept/acc".
+     * transition obj, or "Accept/acc".
      *
      * Example:
      *
@@ -941,7 +941,7 @@ public class Parser {
 
             // ---------------------------------------------------
             // "Shift". Shift-entries always have 's' as their
-            // first char, after which goes *next state number*, e.g. "s5".
+            // first char, after which goes *next state obj*, e.g. "s5".
             // On shift we push the token, and the next state on the stack.
             if (entry.charAt(0) == 's') {
                 YyLoc loc = null;
@@ -949,7 +949,7 @@ public class Parser {
                 // Push token.
                 mValueStack.push(new StackEntry(token.type, token.value, token.loc));
 
-                // Push next state number: "s5" -> 5
+                // Push next state obj: "s5" -> 5
                 mStatesStack.push(Integer.valueOf(entry.substring(1)));
 
                 shiftedToken = token;
@@ -958,9 +958,9 @@ public class Parser {
 
             // ---------------------------------------------------
             // "Reduce". Reduce-entries always have 'r' as their
-            // first char, after which goes *production number* to
+            // first char, after which goes *production obj* to
             // reduce by, e.g. "r3" - reduce by production 3 in the grammar.
-            // On reduce, we pop of the stack number of symbols on the RHS
+            // On reduce, we pop of the stack obj of symbols on the RHS
             // of the production, and their pushed state numbers, i.e.
             // total RHS * 2 symbols.
             else if (entry.charAt(0) == 'r') {
@@ -972,7 +972,7 @@ public class Parser {
                 int rhsLength = production[1];
                 if (rhsLength != 0) {
                     while (rhsLength-- > 0) {
-                        // Pop the state number.
+                        // Pop the state obj.
                         mStatesStack.pop();
                     }
                 }
@@ -996,7 +996,7 @@ public class Parser {
                 // Then push LHS onto the stack.
                 mValueStack.push(__);
 
-                // And the next state number.
+                // And the next state obj.
                 int nextState = Integer.valueOf(
                         mTable.get(previousState).get(symbolToReduceWith)
                 );
@@ -1004,9 +1004,9 @@ public class Parser {
                 mStatesStack.push(nextState);
             }
             // ---------------------------------------------------
-            // Accept. Pop starting production and its state number.
+            // Accept. Pop starting production and its state obj.
             else if (entry.charAt(0) == 'a') {
-                // Pop state number.
+                // Pop state obj.
                 mStatesStack.pop();
 
                 // Pop the parsed value.
