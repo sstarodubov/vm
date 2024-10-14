@@ -4,6 +4,8 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.function.Function;
+
 public class Compiler {
 
     public CodeObj compile(final Exp ast) {
@@ -46,41 +48,29 @@ public class Compiler {
         emit(opCode);
     }
 
-    int getConstIdx() {
-        //TODO
-        return  -1;
-    }
-
-    int numConstIdx(int num) {
+    <T> int constIdx(ValueTypes type, Function<Value, T> asFn,
+                     T val, Function<T, Value> convertFn) {
         for (int i = 0; i < co.constants().size(); i++) {
-            if (co.constants().get(i).type() != ValueTypes.NUMBER) {
+            if (co.constants().get(i).type() != type) {
                 continue;
             }
 
-            final long existed = Value.as_number(co.constants().get(i));
-            if (existed == num) {
+            final T existed = asFn.apply(co.constants().get(i));
+            if (existed.equals(val)) {
                 return i;
             }
         }
 
-        co.constants().add(Value.number(num));
+        co.constants().add(convertFn.apply(val));
         return co.constants().size() - 1;
+    }
+
+    int numConstIdx(long num) {
+        return constIdx(ValueTypes.NUMBER, Value::as_number, num, Value::number);
     }
 
     int stringConstIdx(String s) {
-        for (int i = 0; i < co.constants().size(); i++) {
-            if (co.constants().get(i).type() != ValueTypes.NUMBER) {
-                continue;
-            }
-
-            final String existed = Value.as_string(co.constants().get(i));
-            if (existed.equals(s)) {
-                return i;
-            }
-        }
-
-        co.constants().add(Value.string(s));
-        return co.constants().size() - 1;
+        return constIdx(ValueTypes.STRING, Value::as_string, s, Value::string);
     }
 
     void emit(int code) {

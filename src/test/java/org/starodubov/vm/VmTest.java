@@ -136,7 +136,7 @@ public class VmTest {
                 5
                 """);
 
-        assertEquals(5, exec.obj());
+        assertEquals(5L, exec.obj());
     }
 
     @Test
@@ -178,5 +178,32 @@ public class VmTest {
                 """);
 
         assertEquals("hello world", exec.obj());
+    }
+
+    @Test
+    void complexExpressions_correctConstantPool() {
+        vm.exec("""
+                (
+                  +  1  1 
+                )
+                
+                """);
+
+        assertEquals(1, vm.constants.size());
+        assertEquals(1L, vm.constants.getFirst().obj());
+    }
+
+
+    @Test
+    void complexExpressions_correctConstantPoolWithString() {
+        vm.exec("""
+                (
+                  +  "hello"  "hello" 
+                )
+                
+                """);
+
+        assertEquals(1, vm.constants.size());
+        assertEquals("hello", vm.constants.getFirst().obj());
     }
 }

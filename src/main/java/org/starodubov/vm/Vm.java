@@ -108,16 +108,16 @@ public class Vm {
     }
 
     // stack pointer
-    private int sp = 0;
+    int sp = 0;
 
     //instruction pointer
-    private int ip = 0;
+    int ip = 0;
 
     // bytecode
-    private List<Integer> code;
+    List<Integer> code;
 
     // constant pool
-    private List<Value> constants;
+    List<Value> constants;
 
     static final int STACK_LIMIT = 512;
 
