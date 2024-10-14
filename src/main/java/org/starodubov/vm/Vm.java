@@ -1,5 +1,9 @@
 package org.starodubov.vm;
 
+import org.starodubov.vm.value.CodeObj;
+import org.starodubov.vm.value.Value;
+import org.starodubov.vm.value.ValueTypes;
+
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -26,16 +30,18 @@ public class Vm {
     }
 
     public Value exec(String program) {
-        // var ast = parser.parse(program);
-        // var code,constants = compiler.compile(ast);
-        return exec(code, constants);
+        final Exp ast = parse(program);
+        final CodeObj code = compiler.compile(ast);
+
+        return exec(code.bytecode(), code.constants());
     }
 
-    public Value exec(byte[] bytecode, List<Value> constants) {
+
+    public Value exec(List<Integer> bytecode, List<Value> constants) {
         this.code = bytecode;
         this.constants = constants;
 
-        byte execOp;
+        int execOp;
         for (; ; ) {
             execOp = readByte();
             switch (execOp) {
@@ -66,6 +72,14 @@ public class Vm {
         }
     }
 
+    Exp parse(final String program) {
+        try {
+            return (Exp) parser.parse(program);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     void mathOp(final BiFunction<Long, Long, Long> mathFun) {
         final long oper1 = Value.as_number(pop());
         final long oper2 = Value.as_number(pop());
@@ -73,28 +87,43 @@ public class Vm {
         push(Value.number(result));
     }
 
-    byte readByte() {
-        return code[ip++];
+    int readByte() {
+        return code.get(ip++);
     }
 
     Value getConst() {
         return constants.get(readByte());
     }
 
+    public Vm() {
+        parser = new Parser();
+        compiler = new Compiler();
+        stack = new Value[STACK_LIMIT];
+    }
+
+    public Vm(Parser parser, Compiler compiler, int stackSize) {
+        this.compiler = compiler;
+        this.parser = parser;
+        this.stack = new Value[stackSize];
+    }
+
     // stack pointer
-    int sp = 0;
+    private int sp = 0;
 
     //instruction pointer
-    int ip = 0;
+    private int ip = 0;
 
     // bytecode
-    byte[] code;
+    private List<Integer> code;
 
     // constant pool
-    List<Value> constants;
+    private List<Value> constants;
 
     static final int STACK_LIMIT = 512;
 
-    // stack
-    final Value[] stack = new Value[STACK_LIMIT];
+    final private Parser parser;
+
+    final private Compiler compiler;
+
+    final private Value[] stack ;
 }
