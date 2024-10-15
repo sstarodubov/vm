@@ -50,8 +50,7 @@ public class Vm {
                 }
                 case OP_CONST -> push(getConst());
                 case OP_ADD -> {
-                    final Value oper1 = pop();
-                    final Value oper2 = pop();
+                    final Value oper1 = pop(), oper2 = pop();
                     if (oper1.type() == ValueTypes.STRING && oper2.type() == ValueTypes.STRING) {
                         final String t = Value.asString(oper2) + Value.asString(oper1);
                         push(Value.string(t));
@@ -69,15 +68,12 @@ public class Vm {
                 case OP_DIV -> mathOp((a, b) -> a / b);
                 case OP_COMPARE -> {
                     final int op = readByte();
-                    final Value oper1 = pop();
-                    final Value oper2 = pop();
+                    final Value oper1 = pop(), oper2 = pop();
                     if (oper1.type() == ValueTypes.NUMBER && oper2.type() == ValueTypes.NUMBER) {
-                        final var n1 = Value.asNumber(oper1);
-                        final var n2 = Value.asNumber(oper2);
+                        final long n1 = Value.asNumber(oper1), n2 = Value.asNumber(oper2);
                         push(compareOp(op, n1, n2));
                     } else if (oper1.type() == ValueTypes.BOOLEAN && oper2.type() == ValueTypes.BOOLEAN) {
-                        final var n1 = Value.asBoolean(oper1);
-                        final var n2 = Value.asBoolean(oper2);
+                        final boolean n1 = Value.asBoolean(oper1), n2 = Value.asBoolean(oper2);
                         push(compareOp(op, n1, n2));
                     } else {
                         throw new IllegalStateException("only numbers can be compared. %s, %s, op: %s"
@@ -88,7 +84,7 @@ public class Vm {
                     final boolean cond = Value.asBoolean(pop());
                     final int addr = readByte();
                     if (!cond) {
-                       ip = addr;
+                        ip = addr;
                     }
                 }
                 case OP_JMP -> ip = readByte();
@@ -126,8 +122,7 @@ public class Vm {
     }
 
     void mathOp(final BiFunction<Long, Long, Long> mathFun) {
-        final long oper1 = Value.asNumber(pop());
-        final long oper2 = Value.asNumber(pop());
+        final long oper1 = Value.asNumber(pop()), oper2 = Value.asNumber(pop());
         final long result = mathFun.apply(oper1, oper2);
         push(Value.number(result));
     }
