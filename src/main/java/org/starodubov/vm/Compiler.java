@@ -48,24 +48,22 @@ public class Compiler {
                             // <test>
                             gen(exp.list.get(1));
                             emit(OpCodes.OP_JMP_IF_FALSE);
-                            emit(-1);
+                            emit(0);
 
                             final int elseJmpAddr = getOffset() - 1;
 
                             // <consequent>
                             gen(exp.list.get(2));
                             emit(OpCodes.OP_JMP);
-                            emit(-1);
+                            emit(0);
                             final int endAddr = getOffset() - 1;
-
                             final int elseBranchAddr = getOffset();
-
                             pathJmpAddr(elseJmpAddr, elseBranchAddr);
 
+                            // <alternate>
                             if (exp.list.size() == 4 ) {
                                 gen(exp.list.get(3));
                             }
-
                             final int endBranchAddr = getOffset();
                             pathJmpAddr(endAddr, endBranchAddr);
                         }
