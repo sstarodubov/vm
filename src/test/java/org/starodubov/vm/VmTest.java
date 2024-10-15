@@ -358,6 +358,15 @@ public class VmTest {
     }
 
     @Test
+    void controlFlowBranchInstruction0() {
+        Value result = vm.exec("""
+                (if  (!= 5 10) 1 2)
+                """);
+
+        assertEquals(1L, result.obj());
+    }
+
+    @Test
     void controlFlowBranchInstruction1() {
         Value result = vm.exec("""
                 (if  (> 5 10) true false)
