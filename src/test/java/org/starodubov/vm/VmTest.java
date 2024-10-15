@@ -383,4 +383,16 @@ public class VmTest {
 
         assertEquals(true, result.obj());
     }
+
+    @Test
+    void controlFlowBranchInstruction3() {
+        Value result = vm.exec("""
+                (if  (== 5 10)  
+                        ( + 1 2 ) 
+                        ( + 3 4 )
+                )
+                """);
+
+        assertEquals(7L, result.obj());
+    }
 }
