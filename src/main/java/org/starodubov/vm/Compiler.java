@@ -4,7 +4,6 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
-import java.util.Map;
 import java.util.function.Function;
 
 public class Compiler {
