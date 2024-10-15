@@ -53,10 +53,10 @@ public class Vm {
                     final Value oper1 = pop();
                     final Value oper2 = pop();
                     if (oper1.type() == ValueTypes.STRING && oper2.type() == ValueTypes.STRING) {
-                        final String t = Value.as_string(oper2) + Value.as_string(oper1);
+                        final String t = Value.asString(oper2) + Value.asString(oper1);
                         push(Value.string(t));
                     } else if (oper1.type() == ValueTypes.NUMBER && oper2.type() == ValueTypes.NUMBER) {
-                        final long t = Value.as_number(oper1) + Value.as_number(oper2);
+                        final long t = Value.asNumber(oper1) + Value.asNumber(oper2);
                         push(Value.number(t));
                     } else {
                         throw new IllegalStateException("cannot exec '%s' + '%s'".formatted(
@@ -67,9 +67,54 @@ public class Vm {
                 case OP_SUB -> mathOp((a, b) -> a - b);
                 case OP_MUL -> mathOp((a, b) -> a * b);
                 case OP_DIV -> mathOp((a, b) -> a / b);
+                case OP_COMPARE -> {
+                    final int op = readByte();
+                    final Value oper1 = pop();
+                    final Value oper2 = pop();
+                    if (oper1.type() == ValueTypes.NUMBER && oper2.type() == ValueTypes.NUMBER) {
+                        final var n1 = Value.asNumber(oper1);
+                        final var n2 = Value.asNumber(oper2);
+                        push(compareOp(op, n1, n2));
+                    } else if (oper1.type() == ValueTypes.BOOLEAN && oper2.type() == ValueTypes.BOOLEAN) {
+                        final var n1 = Value.asBoolean(oper1);
+                        final var n2 = Value.asBoolean(oper2);
+                        push(compareOp(op, n1, n2));
+                    } else {
+                        throw new IllegalStateException("only numbers can be compared. %s, %s, op: %s"
+                                .formatted(oper1, oper2, op));
+                    }
+                }
+                case OP_JMP_IF_FALSE -> {
+                    final boolean cond = Value.asBoolean(pop());
+                    final int addr = readByte();
+                    if (!cond) {
+                       ip = addr;
+                    }
+                }
+                case OP_JMP -> ip = readByte();
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
         }
+    }
+
+    Value compareOp(int op, boolean n1, boolean n2) {
+        return switch (op) {
+            case Compiler.CMP_EQ_CODE -> Value.bool(n1 == n2);
+            case Compiler.CMP_NOT_EQ_CODE -> Value.bool(n1 != n2);
+            default -> throw new IllegalStateException("Unexpected compare value for booleans: " + op);
+        };
+    }
+
+    Value compareOp(int op, long n1, long n2) {
+        return switch (op) {
+            case Compiler.CMP_LESS_CODE -> Value.bool(n1 > n2);
+            case Compiler.CMP_GREAT_CODE -> Value.bool(n1 < n2);
+            case Compiler.CMP_EQ_CODE -> Value.bool(n1 == n2);
+            case Compiler.CMP_GREAT_OR_EQ_CODE -> Value.bool(n1 <= n2);
+            case Compiler.CMP_EQ_OR_LESS_CODE -> Value.bool(n1 >= n2);
+            case Compiler.CMP_NOT_EQ_CODE -> Value.bool(n1 != n2);
+            default -> throw new IllegalStateException("Unexpected compare value for nums: " + op);
+        };
     }
 
     Exp parse(final String program) {
@@ -81,8 +126,8 @@ public class Vm {
     }
 
     void mathOp(final BiFunction<Long, Long, Long> mathFun) {
-        final long oper1 = Value.as_number(pop());
-        final long oper2 = Value.as_number(pop());
+        final long oper1 = Value.asNumber(pop());
+        final long oper2 = Value.asNumber(pop());
         final long result = mathFun.apply(oper1, oper2);
         push(Value.number(result));
     }
@@ -125,5 +170,5 @@ public class Vm {
 
     final private Compiler compiler;
 
-    final private Value[] stack ;
+    final private Value[] stack;
 }

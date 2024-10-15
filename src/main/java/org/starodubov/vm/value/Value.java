@@ -18,7 +18,7 @@ public record Value(
         return new Value(ValueTypes.CODE, new CodeObj(new ArrayList<>(), new ArrayList<>(), name));
     }
 
-    public static long as_number(Value val) {
+    public static long asNumber(Value val) {
         if (val.obj instanceof Number longNumber) {
             return longNumber.longValue();
         } else {
@@ -26,11 +26,19 @@ public record Value(
         }
     }
 
-    public static String as_string(Value val) {
+    public static Value bool(boolean val) {
+        return new Value(ValueTypes.BOOLEAN, val);
+    }
+
+    public static boolean asBoolean(Value val) {
+        return as(val, Boolean.class);
+    }
+
+    public static String asString(Value val) {
         return as(val, String.class);
     }
 
-    public static CodeObj as_code(Value val) {
+    public static CodeObj asCode(Value val) {
         return as(val, CodeObj.class);
     }
 

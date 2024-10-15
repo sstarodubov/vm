@@ -206,4 +206,172 @@ public class VmTest {
         assertEquals(1, vm.constants.size());
         assertEquals("hello", vm.constants.getFirst().obj());
     }
+
+    @Test
+    void comparison_booleans() {
+        Value result = vm.exec("""
+                  true
+                
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+    @Test
+    void comparison_booleansFalse() {
+        Value result = vm.exec("""
+                 false 
+                
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp() {
+        Value result = vm.exec("""
+                 (> 5 10)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+
+    @Test
+    void comparison_booleansCmpOp1() {
+        Value result = vm.exec("""
+                 (> 11 10)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp2() {
+        Value result = vm.exec("""
+                 (>= 10 10)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+
+    @Test
+    void comparison_booleansCmpOp3() {
+        Value result = vm.exec("""
+                 (<= 10 10)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+
+    @Test
+    void comparison_booleansCmpOp4() {
+        Value result = vm.exec("""
+                 (< 10 10)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp5() {
+        Value result = vm.exec("""
+                 (> 10 10)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp6() {
+        Value result = vm.exec("""
+                 (== 10 10)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+
+    @Test
+    void comparison_booleansCmpOp7() {
+        Value result = vm.exec("""
+                 (!= 10 10)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp8() {
+        Value result = vm.exec("""
+                 (== true true)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp9() {
+        Value result = vm.exec("""
+                 (== false true)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp10() {
+        Value result = vm.exec("""
+                (== false  (> 10 1))
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp11() {
+        Value result = vm.exec("""
+                (>= 101 1)
+                """);
+
+        assertEquals(true, result.obj());
+    }
+
+    @Test
+    void comparison_booleansCmpOp12() {
+        Value result = vm.exec("""
+                (<= 101 1)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void controlFlowBranchInstruction() {
+        Value result = vm.exec("""
+                (if  (== 5 10) 1 2)
+                """);
+
+        assertEquals(2L, result.obj());
+    }
+
+    @Test
+    void controlFlowBranchInstruction1() {
+        Value result = vm.exec("""
+                (if  (> 5 10) true false)
+                """);
+
+        assertEquals(false, result.obj());
+    }
+
+    @Test
+    void controlFlowBranchInstruction2() {
+        Value result = vm.exec("""
+                (if  (< 5 10) true false)
+                """);
+
+        assertEquals(true, result.obj());
+    }
 }
