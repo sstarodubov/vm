@@ -31,6 +31,7 @@ public class Vm {
 
     public Value exec(String program) {
         final CodeObj code = compile(program);
+        disassembler.printDisassemble(code);
         return exec(code.bytecode(), code.constants());
     }
 
@@ -137,12 +138,14 @@ public class Vm {
         parser = new Parser();
         compiler = new Compiler();
         stack = new Value[STACK_LIMIT];
+        disassembler = new Disassembler();
     }
 
-    public Vm(Parser parser, Compiler compiler, int stackSize) {
+    public Vm(Parser parser, Compiler compiler, int stackSize, Disassembler disassembler) {
         this.compiler = compiler;
         this.parser = parser;
         this.stack = new Value[stackSize];
+        this.disassembler = disassembler;
     }
 
     // stack pointer
@@ -158,6 +161,8 @@ public class Vm {
     List<Value> constants;
 
     static final int STACK_LIMIT = 512;
+
+    final private Disassembler disassembler;
 
     final private Parser parser;
 

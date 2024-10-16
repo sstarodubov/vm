@@ -7,7 +7,7 @@ import static org.starodubov.vm.OpCodes.*;
 
 public class Disassembler {
 
-    void disassemble(CodeObj co) {
+    void printDisassemble(CodeObj co) {
         System.out.println(co);
         System.out.printf("---------------Disassembly: %s ----------------------%n", co.name());
         System.out.printf("%s%10s%30s\n", "offset", "bytes", "opcode");
@@ -47,8 +47,11 @@ public class Disassembler {
         final var sOffset = printOffset(offset);
         final var sBytes = printBytes(co, offset, 2);
         final var sOpcode = OpCodes.opcodeToString(opcode);
-        System.out.printf("%s%16s%27s (%s)\n", sOffset, sBytes, sOpcode,
-                Compiler.compareToString(co.bytecode().get(offset + 1)));
+        System.out.println(
+                align(sOffset, sBytes, sOpcode) +
+                        " (%s)".formatted(Compiler.compareToString(co.bytecode().get(offset + 1)))
+
+        );
         return offset + 2;
     }
 
@@ -56,8 +59,9 @@ public class Disassembler {
         final var sOffset = printOffset(offset);
         final var sBytes = printBytes(co, offset, 2);
         final var sOpcode = OpCodes.opcodeToString(opcode);
-        System.out.printf("%s%16s%25s (%s)\n", sOffset, sBytes, sOpcode,
-                co.constants().get(co.bytecode().get(offset + 1)).obj());
+        System.out.println(
+                align(sOffset, sBytes, sOpcode) +
+                        " (%s)".formatted(co.constants().get(co.bytecode().get(offset + 1)).obj()));
         return offset + 2;
     }
 
@@ -70,7 +74,7 @@ public class Disassembler {
     }
 
     private String printOffset(int offset) {
-        return StringUtils.leftPad("%s".formatted(offset), 4, '0');
+        return "0x" + StringUtils.leftPad("%X".formatted(offset), 4, '0');
     }
 
     private String printBytes(CodeObj co, int offset, int count) {
@@ -87,6 +91,6 @@ public class Disassembler {
     private String printByteAndAddr(CodeObj co, int offset) {
         return StringUtils.rightPad("0x%X".formatted(co.bytecode().get(offset)), 4, '0')
                 + " "
-                + StringUtils.leftPad("%d".formatted(co.bytecode().get(offset + 1)), 4, '0');
+                + printOffset(co.bytecode().get(offset + 1));
     }
 }

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
-import org.starodubov.vm.value.ValueTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -402,7 +401,7 @@ public class VmTest {
     void disassembler() {
         CodeObj co = vm.compile("(if  (< 5 10) true false)");
 
-        new Disassembler().disassemble(
+        new Disassembler().printDisassemble(
                 co
         );
     }
