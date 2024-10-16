@@ -2,7 +2,9 @@ package org.starodubov.vm;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
+import org.starodubov.vm.value.ValueTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -394,5 +396,14 @@ public class VmTest {
                 """);
 
         assertEquals(7L, result.obj());
+    }
+
+    @Test
+    void disassembler() {
+        CodeObj co = vm.compile("(if  (< 5 10) true false)");
+
+        new Disassembler().disassemble(
+                co
+        );
     }
 }

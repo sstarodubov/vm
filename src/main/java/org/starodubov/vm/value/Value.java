@@ -6,6 +6,12 @@ public record Value(
         ValueTypes type,
         Object obj
 ) {
+
+    @Override
+    public String toString() {
+        return "(type=%s, obj=%s)".formatted(type, obj);
+    }
+
     public static <T extends Number> Value number(T number) {
         return new Value(ValueTypes.NUMBER, number);
     }

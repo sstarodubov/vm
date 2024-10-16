@@ -30,12 +30,9 @@ public class Vm {
     }
 
     public Value exec(String program) {
-        final Exp ast = parse(program);
-        final CodeObj code = compiler.compile(ast);
-
+        final CodeObj code = compile(program);
         return exec(code.bytecode(), code.constants());
     }
-
 
     public Value exec(List<Integer> bytecode, List<Value> constants) {
         this.code = bytecode;
@@ -113,9 +110,10 @@ public class Vm {
         };
     }
 
-    Exp parse(final String program) {
+    CodeObj compile(String program) {
         try {
-            return (Exp) parser.parse(program);
+            final var ast = (Exp) parser.parse(program);
+            return compiler.compile(ast);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

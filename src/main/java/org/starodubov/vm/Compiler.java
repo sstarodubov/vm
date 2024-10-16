@@ -60,7 +60,7 @@ public class Compiler {
                             pathJmpAddr(elseJmpAddr, elseBranchAddr);
 
                             // <alternate>
-                            if (exp.list.size() == 4 ) {
+                            if (exp.list.size() == 4) {
                                 gen(exp.list.get(3));
                             }
                             final int endBranchAddr = getOffset();
@@ -140,10 +140,22 @@ public class Compiler {
 
     CodeObj co;
 
-    public static final int CMP_GREAT_CODE = 100;
-    public static final int CMP_LESS_CODE = 101;
-    public static final int CMP_EQ_CODE = 102;
-    public static final int CMP_EQ_OR_LESS_CODE = 103;
-    public static final int CMP_GREAT_OR_EQ_CODE = 104;
-    public static final int CMP_NOT_EQ_CODE = 105;
+    public static final int CMP_GREAT_CODE = 1;
+    public static final int CMP_LESS_CODE = 2;
+    public static final int CMP_EQ_CODE = 3;
+    public static final int CMP_EQ_OR_LESS_CODE = 4;
+    public static final int CMP_GREAT_OR_EQ_CODE = 5;
+    public static final int CMP_NOT_EQ_CODE = 6;
+
+    public static String compareToString(int compareCode) {
+        return switch (compareCode) {
+            case CMP_LESS_CODE -> "<";
+            case CMP_GREAT_CODE -> ">";
+            case CMP_EQ_CODE -> "==";
+            case CMP_GREAT_OR_EQ_CODE -> ">=";
+            case CMP_EQ_OR_LESS_CODE -> "<=";
+            case CMP_NOT_EQ_CODE -> "!=";
+            default -> "unknown";
+        };
+    }
 }

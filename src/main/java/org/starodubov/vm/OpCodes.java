@@ -12,4 +12,19 @@ public class OpCodes {
     public static final int OP_COMPARE = 0x06;
     public static final int OP_JMP_IF_FALSE = 0x07;
     public static final int OP_JMP = 0x08;
+
+    public static String opcodeToString(int opcode) {
+        return switch (opcode) {
+            case 0x00 -> "HALT";
+            case 0x01 -> "CONST";
+            case 0x02 -> "ADD";
+            case 0x03 -> "SUB";
+            case 0x04 -> "MUL";
+            case 0x05 -> "DIV";
+            case 0x06 -> "COMPARE";
+            case 0x07 -> "JMP_IF_FALSE";
+            case 0x08 -> "JMP";
+            default -> "UNKNOWN";
+        };
+    }
 }
