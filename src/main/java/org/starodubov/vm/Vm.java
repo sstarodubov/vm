@@ -22,7 +22,7 @@ public class Vm {
     }
 
     Value pop() {
-        if (sp < 0) {
+        if (sp <= 0 ) {
             throw new IllegalStateException("empty stack");
         }
 
@@ -93,7 +93,7 @@ public class Vm {
                 }
                 case OP_SET_GLOBAL -> {
                    final int globalIdx = readByte();
-                   final Value v = peek(0);
+                   final Value v = peek();
                    global.set(globalIdx, v);
                 }
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
@@ -107,12 +107,14 @@ public class Vm {
         }
         return stack[sp - 1];
     }
+
     Value peek(int offset) {
-        if ( sp <= 0) {
+        if (sp <= 0) {
            throw new ArrayIndexOutOfBoundsException("stack. sp=%s,offset=%s".formatted(sp, offset));
         }
         return stack[sp - 1 - offset];
     }
+
     Value compareOp(int op, boolean n1, boolean n2) {
         return switch (op) {
             case Compiler.CMP_EQ_CODE -> Value.bool(n1 == n2);

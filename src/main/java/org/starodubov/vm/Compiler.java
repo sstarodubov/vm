@@ -4,7 +4,6 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Compiler {
@@ -69,11 +68,25 @@ public class Compiler {
                         }
                         case "var" -> {
                             // global vars
-                            global.define(exp.list.get(1).string);
+                            final var varName = exp.list.get(1).string;
+                            global.define(varName);
 
                             gen(exp.list.get(2));
                             emit(OpCodes.OP_SET_GLOBAL);
-                            emit(global.getGlobalIdx(exp.list.get(1).string));
+                            emit(global.getGlobalIdx(varName));
+
+                            //todo(local vars)
+                        }
+                        case "set" -> {
+                            // global vars
+                            final var varName = exp.list.get(1).string;
+                            final var varIdx = global.getGlobalIdx(varName);
+                            if (varIdx == -1) {
+                                throw new IllegalStateException("variable '%s' is not defined".formatted(varName));
+                            }
+                            gen(exp.list.get(2));
+                            emit(OpCodes.OP_SET_GLOBAL);
+                            emit(varIdx);
 
                             //todo(local vars)
                         }
@@ -151,8 +164,8 @@ public class Compiler {
         return constIdx(ValueTypes.STRING, Value::asString, s, Value::string);
     }
 
-    void emit(int code) {
-        co.bytecode().add(code);
+    void emit(int byteVal) {
+        co.bytecode().add(byteVal);
     }
 
 

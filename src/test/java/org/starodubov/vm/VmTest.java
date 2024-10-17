@@ -2,7 +2,6 @@ package org.starodubov.vm;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 
 import java.util.ArrayList;
@@ -424,11 +423,23 @@ public class VmTest {
     @Test
     void defineGlobalVariables() {
         var vm = new Vm();
-
+        vm.setGlobalVars(new GlobalVar("x", Value.number(100)));
         var result = vm.exec("""
-                (var z 3)
+                (var z (+ x 3))
                 """);
 
-        assertEquals(3L, result.obj());
+        assertEquals(103L, result.obj());
     }
+
+    @Test
+    void setGlobalVariables() {
+        var vm = new Vm();
+        vm.setGlobalVars(new GlobalVar("x", Value.number(100)));
+        var result = vm.exec("""
+                (set x (+ x 3))
+                """);
+
+        assertEquals(103L, result.obj());
+    }
+
 }
