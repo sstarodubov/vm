@@ -13,6 +13,9 @@ public class OpCodes {
     public static final int OP_JMP_IF_FALSE = 0x07;
     public static final int OP_JMP = 0x08;
 
+    public static final int OP_GET_GLOBAL = 0x09;
+    public static final int OP_SET_GLOBAL = 0x10;
+
     public static String opcodeToString(int opcode) {
         return switch (opcode) {
             case 0x00 -> "HALT";
@@ -24,6 +27,8 @@ public class OpCodes {
             case 0x06 -> "COMPARE";
             case 0x07 -> "JMP_IF_FALSE";
             case 0x08 -> "JMP";
+            case 0x09 -> "GET_GLOBAL";
+            case 0x10 -> "SET_GLOBAL";
             default -> "UNKNOWN";
         };
     }

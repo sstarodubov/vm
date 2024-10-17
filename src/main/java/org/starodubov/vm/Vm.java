@@ -4,6 +4,7 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -86,11 +87,32 @@ public class Vm {
                     }
                 }
                 case OP_JMP -> ip = readByte();
+                case OP_GET_GLOBAL -> {
+                    final int globalIdx = readByte();
+                    push(global.get(globalIdx).value);
+                }
+                case OP_SET_GLOBAL -> {
+                   final int globalIdx = readByte();
+                   final Value v = peek(0);
+                   global.set(globalIdx, v);
+                }
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
         }
     }
 
+    Value peek() {
+        if (sp <= 0 ) {
+           throw new ArrayIndexOutOfBoundsException("stack is empty");
+        }
+        return stack[sp - 1];
+    }
+    Value peek(int offset) {
+        if ( sp <= 0) {
+           throw new ArrayIndexOutOfBoundsException("stack. sp=%s,offset=%s".formatted(sp, offset));
+        }
+        return stack[sp - 1 - offset];
+    }
     Value compareOp(int op, boolean n1, boolean n2) {
         return switch (op) {
             case Compiler.CMP_EQ_CODE -> Value.bool(n1 == n2);
@@ -134,18 +156,16 @@ public class Vm {
         return constants.get(readByte());
     }
 
-    public Vm() {
-        parser = new Parser();
-        compiler = new Compiler();
-        stack = new Value[STACK_LIMIT];
-        disassembler = new Disassembler();
+    void setGlobalVars(GlobalVar... globalVars ) {
+        global.addConst(globalVars);
     }
 
-    public Vm(Parser parser, Compiler compiler, int stackSize, Disassembler disassembler) {
-        this.compiler = compiler;
-        this.parser = parser;
-        this.stack = new Value[stackSize];
-        this.disassembler = disassembler;
+    public Vm() {
+        parser = new Parser();
+        global = new Global(new ArrayList<>());
+        compiler = new Compiler(global);
+        stack = new Value[STACK_LIMIT];
+        disassembler = new Disassembler(global);
     }
 
     // stack pointer
@@ -169,4 +189,6 @@ public class Vm {
     final private Compiler compiler;
 
     final private Value[] stack;
+
+    final private Global global;
 }

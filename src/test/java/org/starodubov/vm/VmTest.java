@@ -398,11 +398,37 @@ public class VmTest {
     }
 
     @Test
-    void disassembler() {
-        CodeObj co = vm.compile("(if  (< 5 10) true false)");
+    void globalVariables() {
+        var vm = new Vm();
+        vm.setGlobalVars(new GlobalVar("x", Value.number(100)));
 
-        new Disassembler().printDisassemble(
-                co
-        );
+        var result = vm.exec("""
+                x
+                """);
+
+        assertEquals(100, result.obj());
+    }
+
+    @Test
+    void globalVariablesStr() {
+        var vm = new Vm();
+        vm.setGlobalVars(new GlobalVar("x", Value.string("hello")));
+
+        var result = vm.exec("""
+                x
+                """);
+
+        assertEquals("hello", result.obj());
+    }
+
+    @Test
+    void defineGlobalVariables() {
+        var vm = new Vm();
+
+        var result = vm.exec("""
+                (var z 3)
+                """);
+
+        assertEquals(3L, result.obj());
     }
 }

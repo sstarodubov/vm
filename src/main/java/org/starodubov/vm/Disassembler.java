@@ -9,6 +9,7 @@ public class Disassembler {
 
     void printDisassemble(CodeObj co) {
         System.out.println(co);
+        System.out.println(global);
         System.out.printf("---------------Disassembly: %s ----------------------%n", co.name());
         System.out.printf("%s%10s%30s\n", "offset", "bytes", "opcode");
         int offset = 0;
@@ -25,12 +26,21 @@ public class Disassembler {
             case OP_COMPARE -> disassembleCompare(co, opcode, offset);
             case OP_HALT, OP_ADD, OP_SUB, OP_DIV, OP_MUL -> disassembleSimple(co, opcode, offset);
             case OP_CONST -> disassembleConst(co, opcode, offset);
+            case OP_SET_GLOBAL, OP_GET_GLOBAL -> disassembleGlobal(co, opcode, offset);
             default -> throw new IllegalStateException("Unexpected opcode: " + opcode);
         };
     }
 
+    private int disassembleGlobal(CodeObj co, int opcode, int offset) {
+        System.out.println(
+                align(offsetToStr(offset), bytesToStr(co, offset, 2), opcodeToString(opcode)) +
+                        " (%s)".formatted(global.get(co.bytecode().get(offset + 1)).name)
+        );
+        return offset + 2;
+    }
+
     private int disassembleJmp(CodeObj co, int opcode, int offset) {
-        final var sOffset = printOffset(offset);
+        final var sOffset = offsetToStr(offset);
         final var sBytes = printByteAndAddr(co, offset);
         final var sOpcode = OpCodes.opcodeToString(opcode);
         System.out.println(align(sOffset, sBytes, sOpcode));
@@ -44,8 +54,8 @@ public class Disassembler {
     }
 
     private int disassembleCompare(CodeObj co, int opcode, int offset) {
-        final var sOffset = printOffset(offset);
-        final var sBytes = printBytes(co, offset, 2);
+        final var sOffset = offsetToStr(offset);
+        final var sBytes = bytesToStr(co, offset, 2);
         final var sOpcode = OpCodes.opcodeToString(opcode);
         System.out.println(
                 align(sOffset, sBytes, sOpcode) +
@@ -56,8 +66,8 @@ public class Disassembler {
     }
 
     private int disassembleConst(CodeObj co, int opcode, int offset) {
-        final var sOffset = printOffset(offset);
-        final var sBytes = printBytes(co, offset, 2);
+        final var sOffset = offsetToStr(offset);
+        final var sBytes = bytesToStr(co, offset, 2);
         final var sOpcode = OpCodes.opcodeToString(opcode);
         System.out.println(
                 align(sOffset, sBytes, sOpcode) +
@@ -66,21 +76,22 @@ public class Disassembler {
     }
 
     private int disassembleSimple(CodeObj co, int opcode, int offset) {
-        final var sOffset = printOffset(offset);
-        final var sBytes = printBytes(co, offset, 1);
+        final var sOffset = offsetToStr(offset);
+        final var sBytes = bytesToStr(co, offset, 1);
         final var sOpcode = OpCodes.opcodeToString(opcode);
         System.out.println(align(sOffset, sBytes, sOpcode));
         return offset + 1;
     }
 
-    private String printOffset(int offset) {
+    private String offsetToStr(int offset) {
         return "0x" + StringUtils.leftPad("%X".formatted(offset), 4, '0');
     }
 
-    private String printBytes(CodeObj co, int offset, int count) {
+    private String bytesToStr(CodeObj co, int offset, int count) {
         final var sb = new StringBuilder();
         for (int i = 0; i < count; i++) {
-            sb.append(StringUtils.rightPad("0x%X".formatted(co.bytecode().get(i + offset)), 4, '0'));
+            sb.append("0x")
+              .append(StringUtils.leftPad("%X".formatted(co.bytecode().get(i + offset)), 2, '0'));
             if (i != count - 1) {
                 sb.append(" ");
             }
@@ -89,8 +100,14 @@ public class Disassembler {
     }
 
     private String printByteAndAddr(CodeObj co, int offset) {
-        return StringUtils.rightPad("0x%X".formatted(co.bytecode().get(offset)), 4, '0')
+        return bytesToStr(co, offset, 1)
                 + " "
-                + printOffset(co.bytecode().get(offset + 1));
+                + offsetToStr(co.bytecode().get(offset + 1));
+    }
+
+    private final Global global;
+
+    public Disassembler(Global global) {
+        this.global = global;
     }
 }

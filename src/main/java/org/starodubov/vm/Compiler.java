@@ -4,6 +4,7 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Compiler {
@@ -66,6 +67,16 @@ public class Compiler {
                             final int endBranchAddr = getOffset();
                             pathJmpAddr(endAddr, endBranchAddr);
                         }
+                        case "var" -> {
+                            // global vars
+                            global.define(exp.list.get(1).string);
+
+                            gen(exp.list.get(2));
+                            emit(OpCodes.OP_SET_GLOBAL);
+                            emit(global.getGlobalIdx(exp.list.get(1).string));
+
+                            //todo(local vars)
+                        }
                     }
                 }
             }
@@ -74,7 +85,13 @@ public class Compiler {
                     emit(OpCodes.OP_CONST);
                     emit(booleanConstIdx(exp.string.equals("true")));
                 } else {
-                    //todo(handle variables)
+                    //variables
+                    if (!global.exist(exp.string)) {
+                       throw new IllegalStateException("%s is not defined".formatted(exp.string));
+                    }
+
+                    emit(OpCodes.OP_GET_GLOBAL);
+                    emit(global.getGlobalIdx(exp.string));
                 }
             }
         }
@@ -138,7 +155,6 @@ public class Compiler {
         co.bytecode().add(code);
     }
 
-    CodeObj co;
 
     public static final int CMP_GREAT_CODE = 1;
     public static final int CMP_LESS_CODE = 2;
@@ -157,5 +173,12 @@ public class Compiler {
             case CMP_NOT_EQ_CODE -> "!=";
             default -> "unknown";
         };
+    }
+
+    CodeObj co;
+    Global global;
+
+    public Compiler(Global global) {
+       this.global = global;
     }
 }
