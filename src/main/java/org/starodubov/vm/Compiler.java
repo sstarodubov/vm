@@ -169,11 +169,10 @@ public class Compiler {
 
     private int getVarsCountOnScopeExit() {
         int count = 0;
-        for (int i = co.locals().size() - 1; i >= 0; i--) {
-            if (co.locals().get(i).scopeLevel() == co.scopeLevel().value()) {
-                co.locals().remove(i);
-                count++;
-            }
+
+        while(!co.locals().isEmpty() && co.locals().getLast().scopeLevel() == co.scopeLevel().value()) {
+           count++;
+           co.locals().removeLast();
         }
 
         return count;

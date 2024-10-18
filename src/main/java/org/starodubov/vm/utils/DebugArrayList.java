@@ -4,27 +4,27 @@ import java.util.ArrayList;
 
 public class DebugArrayList<T> extends ArrayList<T> {
 
-    int p = 0;
+    int dSize = 0;
 
     @Override
     public boolean add(T t) {
-        p++;
+        dSize++;
         return super.add(t);
     }
 
     @Override
     public int size() {
-        return p;
+        return dSize;
     }
 
     @Override
     public boolean isEmpty() {
-        return p == 0;
+        return dSize == 0;
     }
 
     @Override
     public T getLast() {
-        return get(p);
+        return get(dSize - 1);
     }
 
     @Override
@@ -33,9 +33,8 @@ public class DebugArrayList<T> extends ArrayList<T> {
     }
 
     @Override
-    public T remove(int index) {
-        final var ret = super.get(index);
-        p--;
-        return ret;
+    public T removeLast() {
+        dSize--;
+        return null;
     }
 }

@@ -16,7 +16,7 @@ public record CodeObj(
         List<LocalVar> locals
 ) {
     public CodeObj(List<Integer> bytecode, List<Value> constants, String name) {
-        this(bytecode, constants, name, new Counter(), new DebugArrayList<>());
+        this(bytecode, constants, name, new Counter(), new ArrayList<>());
     }
 
     public static CodeObj newCo(String name) {
