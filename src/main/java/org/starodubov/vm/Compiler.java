@@ -168,17 +168,15 @@ public class Compiler {
     }
 
     private int getVarsCountOnScopeExit() {
-        var removeIdxList = new ArrayList<Integer>();
-
+        int count = 0;
         for (int i = co.locals().size() - 1; i >= 0; i--) {
             if (co.locals().get(i).scopeLevel() == co.scopeLevel().value()) {
-               removeIdxList.add(i);
+                co.locals().remove(i);
+                count++;
             }
         }
-        for (int idx : removeIdxList) {
-              co.locals().remove(idx);
-        }
-        return removeIdxList.size();
+
+        return count;
     }
 
     private void scopeEnter() {

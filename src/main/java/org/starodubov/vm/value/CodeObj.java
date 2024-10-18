@@ -34,7 +34,7 @@ public record CodeObj(
             return -1;
         }
 
-        for (int i = 0; i < locals().size(); i++) {
+        for (int i = locals().size() - 1; i >= 0; i--) {
             if (locals().get(i).name().equals(name)) {
                 return i;
             }

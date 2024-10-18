@@ -8,7 +8,7 @@ import static org.starodubov.vm.OpCodes.*;
 public class Disassembler {
 
     void printDisassemble(CodeObj co) {
-        System.out.println(co);
+        System.out.println("constants= " + co.constants());
         System.out.println(global);
         System.out.printf("---------------Disassembly: %s ----------------------%n", co.name());
         System.out.printf("%s%10s%30s\n", "offset", "bytes", "opcode");
