@@ -1,6 +1,7 @@
 package org.starodubov.vm;
 
 import org.apache.commons.lang3.StringUtils;
+import org.starodubov.vm.utils.DebugArrayList;
 import org.starodubov.vm.value.CodeObj;
 
 import static org.starodubov.vm.OpCodes.*;
@@ -34,9 +35,15 @@ public class Disassembler {
     }
 
     private int disassembleLocal(CodeObj co, int opcode, int offset) {
-        System.out.println(
-                align(offsetToStr(offset), bytesToStr(co, offset, 2), opcodeToString(opcode))
-        );
+        final var out = new StringBuilder(
+                  align(offsetToStr(offset), bytesToStr(co, offset, 2), opcodeToString(opcode))
+                );
+
+        if (co.locals() instanceof DebugArrayList<LocalVar>) {
+            out.append(" (%s)".formatted(co.locals().get(co.bytecode().get(offset + 1)).name()));
+        }
+
+        System.out.println(out);
 
         return offset + 2;
     }

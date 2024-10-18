@@ -2,6 +2,7 @@ package org.starodubov.vm.value;
 
 import org.starodubov.vm.LocalVar;
 import org.starodubov.vm.utils.Counter;
+import org.starodubov.vm.utils.DebugArrayList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public record CodeObj(
         List<LocalVar> locals
 ) {
     public CodeObj(List<Integer> bytecode, List<Value> constants, String name) {
-        this(bytecode, constants, name, new Counter(), new ArrayList<>());
+        this(bytecode, constants, name, new Counter(), new DebugArrayList<>());
     }
 
     public static CodeObj newCo(String name) {
