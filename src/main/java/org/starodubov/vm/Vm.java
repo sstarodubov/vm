@@ -22,7 +22,7 @@ public class Vm {
     }
 
     Value pop() {
-        if (sp <= 0 ) {
+        if (sp <= 0) {
             throw new IllegalStateException("empty stack");
         }
 
@@ -92,26 +92,54 @@ public class Vm {
                     push(global.get(globalIdx).value);
                 }
                 case OP_SET_GLOBAL -> {
-                   final int globalIdx = readByte();
-                   final Value v = peek();
-                   global.set(globalIdx, v);
+                    final int globalIdx = readByte();
+                    final Value v = peek();
+                    global.set(globalIdx, v);
                 }
                 case OP_POP -> pop();
+                case OP_GET_LOCAL -> {
+                    final int localIdx = readByte();
+                    if (localIdx < 0 || localIdx >= stack.length) {
+                        throw new ArrayIndexOutOfBoundsException("GET_LOCAL: local idx = %d".formatted(localIdx));
+                    }
+
+                    push(stack[bp + localIdx]);
+                }
+
+                case OP_SET_LOCAL -> {
+                    final int localIdx = readByte();
+                    if (localIdx < 0 || localIdx >= stack.length) {
+                        throw new ArrayIndexOutOfBoundsException("SET_LOCAL: local idx = %d".formatted(localIdx));
+                    }
+                    stack[localIdx] = peek();
+                }
+                case OP_SCOPE_EXIT -> {
+                    final int count = readByte();
+                    stack[sp - 1 - count] = peek();
+                    popN(count);
+                }
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
+
         }
+    }
+    void popN(int count) {
+        if (sp - count <= 0) {
+            throw new ArrayIndexOutOfBoundsException("popN: sp - count == %d".formatted(sp -count));
+        }
+        sp -= count;
     }
 
     Value peek() {
-        if (sp <= 0 ) {
-           throw new ArrayIndexOutOfBoundsException("stack is empty");
+        if (sp <= 0) {
+            throw new ArrayIndexOutOfBoundsException("stack is empty");
         }
         return stack[sp - 1];
     }
 
     Value peek(int offset) {
         if (sp <= 0) {
-           throw new ArrayIndexOutOfBoundsException("stack. sp=%s,offset=%s".formatted(sp, offset));
+            throw new ArrayIndexOutOfBoundsException("stack. sp=%s,offset=%s".formatted(sp, offset));
         }
         return stack[sp - 1 - offset];
     }
@@ -159,7 +187,7 @@ public class Vm {
         return constants.get(readByte());
     }
 
-    void setGlobalVars(GlobalVar... globalVars ) {
+    void setGlobalVars(GlobalVar... globalVars) {
         global.addConst(globalVars);
     }
 
@@ -176,6 +204,9 @@ public class Vm {
 
     //instruction pointer
     int ip = 0;
+
+    // base pointer
+    int bp = 0;
 
     // bytecode
     List<Integer> code;

@@ -452,4 +452,23 @@ public class VmTest {
                 """);
         assertEquals(15L, result.obj());
     }
+
+
+    @Test
+    void blocksLocalVariablesWithScope() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                    (var x 5)
+                    (set x (+ x 10))
+                    x
+                        (begin
+                            (var x 100)
+                            (begin
+                                (var x 200)
+                            x)
+                        x)
+                    x
+                """);
+        assertEquals(15L, result.obj());
+    }
 }

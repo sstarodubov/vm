@@ -4,6 +4,7 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Compiler {
@@ -67,38 +68,49 @@ public class Compiler {
                             pathJmpAddr(endAddr, endBranchAddr);
                         }
                         case "var" -> {
+
                             // global vars
                             final var varName = exp.list.get(1).string;
-                            global.define(varName);
-
                             gen(exp.list.get(2));
-                            emit(OpCodes.OP_SET_GLOBAL);
-                            emit(global.getGlobalIdx(varName));
-
-                            //todo(local vars)
+                            if (isGlobalScope()) {
+                                global.define(varName);
+                                emit(OpCodes.OP_SET_GLOBAL);
+                                emit(global.getGlobalIdx(varName));
+                            } else {
+                                co.addLocal(varName);
+                                emit(OpCodes.OP_SET_LOCAL);
+                                emit(co.getLocalIdx(varName));
+                            }
                         }
                         case "set" -> {
-                            // global vars
                             final var varName = exp.list.get(1).string;
-                            final var varIdx = global.getGlobalIdx(varName);
-                            if (varIdx == -1) {
-                                throw new IllegalStateException("variable '%s' is not defined".formatted(varName));
+                            final var localIdx = co.getLocalIdx(varName);
+                            if (localIdx != -1) {
+                                emit(OpCodes.OP_SET_LOCAL);
+                                emit(localIdx);
+                            } else {
+                                // global vars
+                                final var varIdx = global.getGlobalIdx(varName);
+                                if (varIdx == -1) {
+                                    throw new IllegalStateException("variable '%s' is not defined".formatted(varName));
+                                }
+                                gen(exp.list.get(2));
+                                emit(OpCodes.OP_SET_GLOBAL);
+                                emit(varIdx);
                             }
-                            gen(exp.list.get(2));
-                            emit(OpCodes.OP_SET_GLOBAL);
-                            emit(varIdx);
-
-                            //todo(local vars)
                         }
 
                         case "begin" -> {
+                            scopeEnter();
                             for (int i = 1; i < exp.list.size(); i++) {
                                 boolean isLast = i == exp.list.size() - 1;
+                                boolean isLocalDeclaration = isDeclaration(exp.list.get(i)) && !isGlobalScope();
                                 gen(exp.list.get(i));
-                                if (!isLast) {
+                                if (!isLast && !isLocalDeclaration) {
                                     emit(OpCodes.OP_POP);
                                 }
                             }
+                            scopeExit();
                         }
                     }
                 }
@@ -109,15 +121,68 @@ public class Compiler {
                     emit(booleanConstIdx(exp.string.equals("true")));
                 } else {
                     //variables
-                    if (!global.exist(exp.string)) {
-                       throw new IllegalStateException("%s is not defined".formatted(exp.string));
-                    }
+                    final var varName = exp.string;
+                    final var localIdx = co.getLocalIdx(varName);
+                    if (localIdx != -1) {
+                        emit(OpCodes.OP_GET_LOCAL);
+                        emit(localIdx);
+                    } else {
+                        if (!global.exist(varName)) {
+                            throw new IllegalStateException("%s is not defined".formatted(varName));
+                        }
 
-                    emit(OpCodes.OP_GET_GLOBAL);
-                    emit(global.getGlobalIdx(exp.string));
+                        emit(OpCodes.OP_GET_GLOBAL);
+                        emit(global.getGlobalIdx(varName));
+                    }
                 }
             }
         }
+    }
+
+    private boolean isDeclaration(final Exp exp) {
+        return isVarDeclaration(exp);
+    }
+
+    private boolean isVarDeclaration(final Exp exp) {
+        return isTaggedList(exp, "var");
+    }
+
+    private boolean isTaggedList(final Exp exp, final String tag) {
+        return exp.type == ExpType.LIST &&
+                !exp.list.isEmpty() &&
+                exp.list.getFirst().type == ExpType.SYMBOL &&
+                exp.list.getFirst().string.equals(tag);
+    }
+
+    private boolean isGlobalScope() {
+        return co.name().equals("main") && co.scopeLevel().value() == 1;
+    }
+
+    private void scopeExit() {
+        final int varsCount = getVarsCountOnScopeExit();
+        if (varsCount > 0) {
+            emit(OpCodes.OP_SCOPE_EXIT);
+            emit(varsCount);
+        }
+        co.scopeLevel().dec();
+    }
+
+    private int getVarsCountOnScopeExit() {
+        var removeIdxList = new ArrayList<Integer>();
+
+        for (int i = co.locals().size() - 1; i >= 0; i--) {
+            if (co.locals().get(i).scopeLevel() == co.scopeLevel().value()) {
+               removeIdxList.add(i);
+            }
+        }
+        for (int idx : removeIdxList) {
+              co.locals().remove(idx);
+        }
+        return removeIdxList.size();
+    }
+
+    private void scopeEnter() {
+        co.scopeLevel().inc();
     }
 
     void pathJmpAddr(int offset, int value) {
@@ -202,6 +267,6 @@ public class Compiler {
     Global global;
 
     public Compiler(Global global) {
-       this.global = global;
+        this.global = global;
     }
 }

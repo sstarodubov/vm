@@ -27,8 +27,18 @@ public class Disassembler {
             case OP_HALT, OP_ADD, OP_SUB, OP_DIV, OP_MUL, OP_POP -> disassembleSimple(co, opcode, offset);
             case OP_CONST -> disassembleConst(co, opcode, offset);
             case OP_SET_GLOBAL, OP_GET_GLOBAL -> disassembleGlobal(co, opcode, offset);
+            case OP_SET_LOCAL, OP_GET_LOCAL -> disassembleLocal(co, opcode, offset);
+            case OP_SCOPE_EXIT -> disassembleWord(co, opcode, offset);
             default -> throw new IllegalStateException("Unexpected opcode: " + opcode);
         };
+    }
+
+    private int disassembleLocal(CodeObj co, int opcode, int offset) {
+        System.out.println(
+                align(offsetToStr(offset), bytesToStr(co, offset, 2), opcodeToString(opcode))
+        );
+
+        return offset + 2;
     }
 
     private int disassembleGlobal(CodeObj co, int opcode, int offset) {
@@ -62,6 +72,14 @@ public class Disassembler {
                         " (%s)".formatted(Compiler.compareToString(co.bytecode().get(offset + 1)))
 
         );
+        return offset + 2;
+    }
+
+    private int disassembleWord(CodeObj co, int opcode, int offset) {
+        final var sOffset = offsetToStr(offset);
+        final var sBytes = bytesToStr(co, offset, 2);
+        final var sOpcode = OpCodes.opcodeToString(opcode);
+        System.out.println(align(sOffset, sBytes, sOpcode));
         return offset + 2;
     }
 
