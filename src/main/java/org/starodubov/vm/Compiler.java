@@ -90,6 +90,16 @@ public class Compiler {
 
                             //todo(local vars)
                         }
+
+                        case "begin" -> {
+                            for (int i = 1; i < exp.list.size(); i++) {
+                                boolean isLast = i == exp.list.size() - 1;
+                                gen(exp.list.get(i));
+                                if (!isLast) {
+                                    emit(OpCodes.OP_POP);
+                                }
+                            }
+                        }
                     }
                 }
             }

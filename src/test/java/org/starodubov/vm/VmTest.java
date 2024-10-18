@@ -442,4 +442,14 @@ public class VmTest {
         assertEquals(103L, result.obj());
     }
 
+    @Test
+    void blocksLocalVariables() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                    (var x 5)
+                    (set x (+ x 10))
+                    x
+                """);
+        assertEquals(15L, result.obj());
+    }
 }

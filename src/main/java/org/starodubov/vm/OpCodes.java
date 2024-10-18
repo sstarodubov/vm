@@ -15,6 +15,7 @@ public class OpCodes {
 
     public static final int OP_GET_GLOBAL = 0x09;
     public static final int OP_SET_GLOBAL = 0x10;
+    public static final int OP_POP = 0x11;
 
     public static String opcodeToString(int opcode) {
         return switch (opcode) {
@@ -29,6 +30,7 @@ public class OpCodes {
             case 0x08 -> "JMP";
             case 0x09 -> "GET_GLOBAL";
             case 0x10 -> "SET_GLOBAL";
+            case 0x11 -> "POP";
             default -> "UNKNOWN";
         };
     }

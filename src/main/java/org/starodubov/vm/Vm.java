@@ -96,6 +96,7 @@ public class Vm {
                    final Value v = peek();
                    global.set(globalIdx, v);
                 }
+                case OP_POP -> pop();
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
         }
@@ -137,7 +138,7 @@ public class Vm {
 
     CodeObj compile(String program) {
         try {
-            final var ast = (Exp) parser.parse(program);
+            final var ast = (Exp) parser.parse("(begin %s )".formatted(program));
             return compiler.compile(ast);
         } catch (Exception e) {
             throw new RuntimeException(e);
