@@ -167,7 +167,7 @@ public class Vm {
     CodeObj compile(String program) {
         try {
             final var ast = (Exp) parser.parse("(begin %s )".formatted(program));
-            return compiler.compile(ast);
+            return debug ? compiler.compileWithFlags(ast, "-d") : compiler.compile(ast);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -189,6 +189,10 @@ public class Vm {
 
     void setGlobalVars(GlobalVar... globalVars) {
         global.addConst(globalVars);
+    }
+
+    void setDebugLocalVars(boolean v) {
+       debug = v;
     }
 
     public Vm() {
@@ -225,4 +229,6 @@ public class Vm {
     final private Value[] stack;
 
     final private Global global;
+
+    private boolean debug = false;
 }

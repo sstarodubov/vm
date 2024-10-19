@@ -534,6 +534,7 @@ public class VmTest {
     @Test
     void forLoop() {
         var vm = new Vm();
+
         var result = vm.exec("""
                (var count 0)
                (for (var i 0) (< i 10) (set i (+ i 1))
@@ -543,6 +544,6 @@ public class VmTest {
                )
                count
                """);
-        assertEquals(10L,result.obj());
+        assertEquals(20L,result.obj());
     }
 }

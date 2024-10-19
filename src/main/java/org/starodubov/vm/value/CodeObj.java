@@ -22,6 +22,9 @@ public record CodeObj(
     public static CodeObj newCo(String name) {
         return new CodeObj(new ArrayList<>(), new ArrayList<>(), name);
     }
+    public static CodeObj newCoWithDebugSymbols(String name) {
+        return new CodeObj(new ArrayList<>(), new ArrayList<>(), name, new Counter(), new DebugArrayList<>());
+    }
 
     @Override
     public String toString() {

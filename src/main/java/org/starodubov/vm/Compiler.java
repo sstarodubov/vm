@@ -4,7 +4,6 @@ import org.starodubov.vm.value.CodeObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Compiler {
@@ -15,6 +14,22 @@ public class Compiler {
         emit(OpCodes.OP_HALT);
 
         return co;
+    }
+
+    public CodeObj compileWithFlags(final Exp ast, String...flags) {
+       boolean debug = false;
+       for (var flag : flags) {
+           if (flag.equals("-d")) {
+               debug = true;
+           }
+       }
+
+        co = debug ? CodeObj.newCoWithDebugSymbols("main"): CodeObj.newCo("main");
+        gen(ast);
+        emit(OpCodes.OP_HALT);
+
+        return co;
+
     }
 
     void gen(final Exp exp) {
@@ -127,7 +142,25 @@ public class Compiler {
 
                             final int loopEndAdrr = getOffset() + 1;
                             pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
+                        }
 
+                        case "for" -> {
+                            //convert to while loop
+                            gen(exp.list.get(1));
+                            final int loopStartAddr = getOffset();
+                            gen(exp.list.get(2));
+                            emit(OpCodes.OP_JMP_IF_FALSE);
+                            emit(0);
+                            final int loopEndJmpAddr = getOffset() - 1;
+
+                            gen(exp.list.get(3));
+                            gen(exp.list.get(4));
+                            emit(OpCodes.OP_JMP);
+                            emit(0);
+                            pathJmpAddr(getOffset() - 1, loopStartAddr);
+
+                            final int loopEndAdrr = getOffset() + 1;
+                            pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
                         }
                     }
                 }
@@ -187,9 +220,9 @@ public class Compiler {
     private int getVarsCountOnScopeExit() {
         int count = 0;
 
-        while(!co.locals().isEmpty() && co.locals().getLast().scopeLevel() == co.scopeLevel().value()) {
-           count++;
-           co.locals().removeLast();
+        while (!co.locals().isEmpty() && co.locals().getLast().scopeLevel() == co.scopeLevel().value()) {
+            count++;
+            co.locals().removeLast();
         }
 
         return count;
