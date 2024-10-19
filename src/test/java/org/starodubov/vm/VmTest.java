@@ -50,8 +50,8 @@ public class VmTest {
     void givenNumbers_whenSub_thenReturnCorrectResult() {
         constants = List.of(Value.number(2), Value.number(3));
         bytecode = List.of(
-                OP_CONST, 1,
                 OP_CONST, 0,
+                OP_CONST, 1,
                 OP_SUB,
                 OP_HALT
         );
@@ -76,8 +76,8 @@ public class VmTest {
     void givenNumbers_whenDiv_thenReturnCorrectResult() {
         constants = List.of(Value.number(6), Value.number(3));
         bytecode = List.of(
-                OP_CONST, 1,
                 OP_CONST, 0,
+                OP_CONST, 1,
                 OP_DIV,
                 OP_HALT
         );
@@ -92,8 +92,11 @@ public class VmTest {
                 Value.number(6), Value.number(3), Value.number(8)
         );
         bytecode = List.of(
-                OP_CONST, 1, OP_CONST, 0, OP_DIV,
-                OP_CONST, 2, OP_ADD,
+                OP_CONST, 0,
+                OP_CONST, 1,
+                OP_DIV,
+                OP_CONST, 2,
+                OP_ADD,
                 OP_HALT
         );
 
@@ -164,7 +167,7 @@ public class VmTest {
                 (- 1 (+ 40 1))
                 """);
 
-        assertEquals(40L, exec.obj());
+        assertEquals(-40L, exec.obj());
     }
 
 
@@ -490,5 +493,56 @@ public class VmTest {
                     x
                 """);
         assertEquals(1000L, result.obj());
+    }
+
+
+    @Test
+    void exec() {
+        var vm = new Vm();
+        var result = vm.exec("""
+            (var count 0)
+            (begin
+                (set count (+ count 1))
+                (set count (+ count 1))
+                (set count (+ count 1))
+                (set count (+ count 1))
+                (set count (+ count 1))
+            )
+            count""");
+
+        assertEquals(5L,result.obj());
+    }
+
+    @Test
+    void whileLoop() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                (var i 10)
+                (var count 0)
+                (while (> i 0)
+                    (begin
+                        (set i (- i 1))
+                        (set count (+ count 1))
+                    )
+                )
+               count
+               """);
+
+        assertEquals(10L,result.obj());
+    }
+
+    @Test
+    void forLoop() {
+        var vm = new Vm();
+        var result = vm.exec("""
+               (var count 0)
+               (for (var i 0) (< i 10) (set i (+ i 1))
+                    (begin
+                        (set count (+ count 2))
+                    )
+               )
+               count
+               """);
+        assertEquals(10L,result.obj());
     }
 }

@@ -112,6 +112,23 @@ public class Compiler {
                             }
                             scopeExit();
                         }
+                        case "while" -> {
+                            final int loopStartAddr = getOffset();
+                            gen(exp.list.get(1));
+                            emit(OpCodes.OP_JMP_IF_FALSE);
+                            emit(0);
+                            final int loopEndJmpAddr = getOffset() - 1;
+
+                            gen(exp.list.get(2));
+
+                            emit(OpCodes.OP_JMP);
+                            emit(0);
+                            pathJmpAddr(getOffset() - 1, loopStartAddr);
+
+                            final int loopEndAdrr = getOffset() + 1;
+                            pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
+
+                        }
                     }
                 }
             }

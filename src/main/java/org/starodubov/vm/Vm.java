@@ -62,9 +62,9 @@ public class Vm {
                         ));
                     }
                 }
-                case OP_SUB -> mathOp((a, b) -> a - b);
+                case OP_SUB -> mathOp((a, b) -> b - a);
                 case OP_MUL -> mathOp((a, b) -> a * b);
-                case OP_DIV -> mathOp((a, b) -> a / b);
+                case OP_DIV -> mathOp((a, b) -> b / a);
                 case OP_COMPARE -> {
                     final int op = readByte();
                     final Value oper1 = pop(), oper2 = pop();
