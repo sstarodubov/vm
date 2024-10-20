@@ -1,5 +1,7 @@
 package org.starodubov.vm;
+import org.starodubov.vm.value.NativeObj;
 import org.starodubov.vm.value.Value;
+import org.starodubov.vm.value.ValueTypes;
 
 import java.util.List;
 
@@ -61,5 +63,13 @@ public record Global(
         }
 
         globals.add(new GlobalVar(name, Value.number(0)));
+    }
+
+    public void addNativeFunction(final String name, final Runnable fn, final int arity) {
+        if (exist(name)) {
+            return;
+        }
+
+        globals.add(new GlobalVar(name, new Value(ValueTypes.NATIVE, new NativeObj(name, fn, arity))));
     }
 }

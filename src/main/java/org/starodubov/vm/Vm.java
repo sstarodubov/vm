@@ -118,13 +118,25 @@ public class Vm {
                     stack[sp - 1 - count] = peek();
                     popN(count);
                 }
+                case OP_CALL -> {
+                    final int argsCount = readByte();
+                    final Value fnValue = peek(argsCount);
+                    if (ValueTypes.NATIVE == fnValue.type()) {
+                        Value.asNative(fnValue).fn().run();
+                        final var result = pop();
+                        popN(argsCount + 1);
+                        push(result);
+                    } else {
+                        // todo(user-defined function call)
+                    }
+                }
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
 
         }
     }
     void popN(int count) {
-        if (sp - count <= 0) {
+        if (sp - count < 0) {
             throw new ArrayIndexOutOfBoundsException("popN: sp - count == %d".formatted(sp -count));
         }
         sp -= count;
@@ -191,6 +203,10 @@ public class Vm {
         global.addConst(globalVars);
     }
 
+    void addNativeFuntion(final String name, Runnable fn, int arity) {
+        global.addNativeFunction(name, fn, arity);
+    }
+
     void setDebugLocalVars(boolean v) {
        debug = v;
     }
@@ -201,6 +217,18 @@ public class Vm {
         compiler = new Compiler(global);
         stack = new Value[STACK_LIMIT];
         disassembler = new Disassembler(global);
+
+        addNativeFuntion("square", () -> {
+            final long x = Value.asNumber(peek());
+            push(Value.number(x * x));
+        }, 1);
+
+        addNativeFuntion("println", () -> {
+            final Value x = peek();
+            System.out.println(x.obj());
+            push(Value.VOID);
+        }, 1);
+
     }
 
     // stack pointer

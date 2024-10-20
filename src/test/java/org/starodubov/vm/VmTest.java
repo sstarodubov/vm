@@ -3,6 +3,7 @@ package org.starodubov.vm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.starodubov.vm.value.Value;
+import org.starodubov.vm.value.ValueTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -545,5 +546,33 @@ public class VmTest {
                count
                """);
         assertEquals(20L,result.obj());
+    }
+
+    @Test
+    void nativeFunctions() {
+        var vm = new Vm();
+
+        var result = vm.exec("""
+                (var x 2)
+                (square x)
+                """);
+
+       assertEquals(4L, result.obj());
+    }
+
+    @Test
+    void nativeFunctions_print() {
+        var vm = new Vm();
+
+        var result = vm.exec("""
+                (var x 2)
+                (begin
+                    (var x 10)
+                    (println x)
+                )
+                (println x)
+                """);
+
+        assertEquals(ValueTypes.VOID, result.type());
     }
 }

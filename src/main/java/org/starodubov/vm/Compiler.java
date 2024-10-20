@@ -16,15 +16,15 @@ public class Compiler {
         return co;
     }
 
-    public CodeObj compileWithFlags(final Exp ast, String...flags) {
-       boolean debug = false;
-       for (var flag : flags) {
-           if (flag.equals("-d")) {
-               debug = true;
-           }
-       }
+    public CodeObj compileWithFlags(final Exp ast, String... flags) {
+        boolean debug = false;
+        for (var flag : flags) {
+            if (flag.equals("-d")) {
+                debug = true;
+            }
+        }
 
-        co = debug ? CodeObj.newCoWithDebugSymbols("main"): CodeObj.newCo("main");
+        co = debug ? CodeObj.newCoWithDebugSymbols("main") : CodeObj.newCo("main");
         gen(ast);
         emit(OpCodes.OP_HALT);
 
@@ -161,6 +161,18 @@ public class Compiler {
 
                             final int loopEndAdrr = getOffset() + 1;
                             pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
+                        }
+                        // treat as a function
+                        default -> {
+                            //push function onto the stack
+                            gen(exp.list.getFirst());
+                            // push arguments
+                            for (int i = 1; i < exp.list.size(); i++) {
+                                gen(exp.list.get(i));
+                            }
+
+                            emit(OpCodes.OP_CALL);
+                            emit(exp.list.size() - 1);
                         }
                     }
                 }

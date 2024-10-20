@@ -4,5 +4,7 @@ public enum ValueTypes {
     NUMBER,
     STRING,
     CODE,
-    BOOLEAN
+    BOOLEAN,
+    NATIVE,
+    VOID
 }

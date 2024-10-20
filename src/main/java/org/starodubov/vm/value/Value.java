@@ -12,6 +12,8 @@ public record Value(
         return "(type=%s, obj=%s)".formatted(type, obj);
     }
 
+    public static final Value VOID = new Value(ValueTypes.VOID, new Object());
+
     public static <T extends Number> Value number(T number) {
         return new Value(ValueTypes.NUMBER, number);
     }
@@ -46,6 +48,10 @@ public record Value(
 
     public static CodeObj asCode(Value val) {
         return as(val, CodeObj.class);
+    }
+
+    public static NativeObj asNative(Value val) {
+        return as(val, NativeObj.class);
     }
 
     public static <T> T as(Value val, Class<T> type) {

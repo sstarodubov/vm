@@ -29,7 +29,7 @@ public class Disassembler {
             case OP_CONST -> disassembleConst(co, opcode, offset);
             case OP_SET_GLOBAL, OP_GET_GLOBAL -> disassembleGlobal(co, opcode, offset);
             case OP_SET_LOCAL, OP_GET_LOCAL -> disassembleLocal(co, opcode, offset);
-            case OP_SCOPE_EXIT -> disassembleWord(co, opcode, offset);
+            case OP_SCOPE_EXIT, OP_CALL -> disassembleWord(co, opcode, offset);
             default -> throw new IllegalStateException("Unexpected opcode: " + opcode);
         };
     }
