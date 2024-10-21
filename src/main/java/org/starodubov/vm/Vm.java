@@ -32,7 +32,7 @@ public class Vm {
 
     public Value exec(String program) {
         final CodeObj code = compile(program);
-        disassembler.printDisassemble(code);
+        compiler.disassemble();
         return exec(code.bytecode(), code.constants());
     }
 
@@ -179,7 +179,7 @@ public class Vm {
     CodeObj compile(String program) {
         try {
             final var ast = (Exp) parser.parse("(begin %s )".formatted(program));
-            return debug ? compiler.compileWithFlags(ast, "-d") : compiler.compile(ast);
+            return compiler.compile(ast);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -207,16 +207,11 @@ public class Vm {
         global.addNativeFunction(name, fn, arity);
     }
 
-    void setDebugLocalVars(boolean v) {
-       debug = v;
-    }
-
     public Vm() {
         parser = new Parser();
         global = new Global(new ArrayList<>());
-        compiler = new Compiler(global);
+        compiler = new Compiler(global, new Disassembler(global));
         stack = new Value[STACK_LIMIT];
-        disassembler = new Disassembler(global);
 
         addNativeFuntion("square", () -> {
             final long x = Value.asNumber(peek());
@@ -248,8 +243,6 @@ public class Vm {
 
     static final int STACK_LIMIT = 512;
 
-    final private Disassembler disassembler;
-
     final private Parser parser;
 
     final private Compiler compiler;
@@ -258,5 +251,4 @@ public class Vm {
 
     final private Global global;
 
-    private boolean debug = false;
 }

@@ -1,7 +1,5 @@
 package org.starodubov.vm.value;
 
-import java.util.ArrayList;
-
 public record Value(
         ValueTypes type,
         Object obj
@@ -22,8 +20,8 @@ public record Value(
         return new Value(ValueTypes.STRING, string);
     }
 
-    public static Value code(String name) {
-        return new Value(ValueTypes.CODE, new CodeObj(new ArrayList<>(), new ArrayList<>(), name));
+    public static Value code(CodeObj co) {
+        return new Value(ValueTypes.CODE, co);
     }
 
     public static long asNumber(Value val) {
@@ -52,6 +50,10 @@ public record Value(
 
     public static NativeObj asNative(Value val) {
         return as(val, NativeObj.class);
+    }
+
+    public static FunctionObj asFuntion(Value val) {
+        return as(val, FunctionObj.class);
     }
 
     public static <T> T as(Value val, Class<T> type) {

@@ -21,6 +21,7 @@ public class OpCodes {
 
     public static final int OP_SCOPE_EXIT = 0x14;
     public static final int OP_CALL = 0x15;
+    public static final int OP_RETURN = 0xA;
 
     public static String opcodeToString(int opcode) {
         return switch (opcode) {
@@ -40,6 +41,7 @@ public class OpCodes {
             case 0x13 -> "SET_LOCAL";
             case 0x14 -> "SCOPE_EXIT";
             case 0x15 -> "CALL";
+            case 0xA -> "RETURN";
             default -> "UNKNOWN";
         };
     }

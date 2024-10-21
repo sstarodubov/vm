@@ -1,15 +1,18 @@
 package org.starodubov.vm;
 
 import org.starodubov.vm.value.CodeObj;
+import org.starodubov.vm.value.FunctionObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class Compiler {
 
     public CodeObj compile(final Exp ast) {
-        co = CodeObj.newCo("main");
+        co = Value.asCode(createCodeObjValue("main", 0));
         gen(ast);
         emit(OpCodes.OP_HALT);
 
@@ -24,7 +27,7 @@ public class Compiler {
             }
         }
 
-        co = debug ? CodeObj.newCoWithDebugSymbols("main") : CodeObj.newCo("main");
+        co = debug ? CodeObj.newCoWithDebugSymbols("main", 0) : CodeObj.newCo("main", 0);
         gen(ast);
         emit(OpCodes.OP_HALT);
 
@@ -162,6 +165,49 @@ public class Compiler {
                             final int loopEndAdrr = getOffset() + 1;
                             pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
                         }
+                        case "def" -> {
+                            final Exp fnName = exp.list.get(1);
+                            final var params = exp.list.get(2).list;
+                            final int arity = params.size();
+                            final CodeObj prevCo = co;
+                            //function code object
+                            final Value coValue = createCodeObjValue(fnName.string, arity);
+                            co = Value.asCode(coValue);
+                            //store co as constant
+                            prevCo.addConst(coValue);
+                            co.addLocal(fnName.string);
+
+                            for (int i = 0; i < arity; i++) {
+                                final String argName = params.get(i).string;
+                                co.addLocal(argName);
+                            }
+
+                            //gen body of a function
+                            final var body = exp.list.get(3);
+                            gen(body);
+                            if (!isBlock(body)) {
+                                emit(OpCodes.OP_SCOPE_EXIT);
+                                emit(arity + 1);
+                            }
+
+                            emit(OpCodes.OP_RETURN);
+
+                            final FunctionObj fn = new FunctionObj(co);
+                            co = prevCo;
+                            co.addConst(new Value(ValueTypes.FUNCTION, fn));
+                            emit(OpCodes.OP_CONST);
+                            emit(co.constants().size() - 1);
+
+                            if (isGlobalScope()) {
+                                global.define(fnName.string);
+                                emit(OpCodes.OP_SET_GLOBAL);
+                                emit(global.getGlobalIdx(fnName.string));
+                            } else {
+                                co.addLocal(fnName.string);
+                                emit(OpCodes.OP_SET_LOCAL);
+                                emit(co.getLocalIdx(fnName.string));
+                            }
+                        }
                         // treat as a function
                         default -> {
                             //push function onto the stack
@@ -201,6 +247,12 @@ public class Compiler {
         }
     }
 
+    private Value createCodeObjValue(String name, int arity) {
+        final CodeObj co = CodeObj.newCo(name, arity);
+        codeObjs.add(co);
+        return Value.code(co);
+    }
+
     private boolean isDeclaration(final Exp exp) {
         return isVarDeclaration(exp);
     }
@@ -216,16 +268,28 @@ public class Compiler {
                 exp.list.getFirst().string.equals(tag);
     }
 
+    private boolean isBlock(final Exp exp) {
+        return isTaggedList(exp, "begin");
+    }
+
     private boolean isGlobalScope() {
         return co.name().equals("main") && co.scopeLevel().value() == 1;
     }
 
+    private boolean isFunctionBody() {
+        return !co.name().equals("main") && co.scopeLevel().value() == 1;
+    }
+
     private void scopeExit() {
-        final int varsCount = getVarsCountOnScopeExit();
-        if (varsCount > 0) {
+        int varsCount = getVarsCountOnScopeExit();
+        if (varsCount > 0 || co.arity() > 0) {
             emit(OpCodes.OP_SCOPE_EXIT);
+            if (isFunctionBody()) {
+                 varsCount += co.arity() + 1;
+            }
             emit(varsCount);
         }
+
         co.scopeLevel().dec();
     }
 
@@ -302,6 +366,11 @@ public class Compiler {
         co.bytecode().add(byteVal);
     }
 
+    public void disassemble() {
+        for (var co : codeObjs) {
+            disassembler.printDisassemble(co);
+        }
+    }
 
     public static final int CMP_GREAT_CODE = 1;
     public static final int CMP_LESS_CODE = 2;
@@ -324,8 +393,11 @@ public class Compiler {
 
     CodeObj co;
     Global global;
+    List<CodeObj> codeObjs = new ArrayList<>();
+    final Disassembler disassembler;
 
-    public Compiler(Global global) {
+    public Compiler(Global global, Disassembler disassembler) {
         this.global = global;
+        this.disassembler = disassembler;
     }
 }

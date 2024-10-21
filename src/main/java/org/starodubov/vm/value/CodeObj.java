@@ -13,17 +13,18 @@ public record CodeObj(
         List<Value> constants,
         String name,
         Counter scopeLevel,
-        List<LocalVar> locals
+        List<LocalVar> locals,
+        int arity
 ) {
     public CodeObj(List<Integer> bytecode, List<Value> constants, String name) {
-        this(bytecode, constants, name, new Counter(), new ArrayList<>());
+        this(bytecode, constants, name, new Counter(), new ArrayList<>(), 0);
     }
 
-    public static CodeObj newCo(String name) {
-        return new CodeObj(new ArrayList<>(), new ArrayList<>(), name);
+    public static CodeObj newCo(String name, int arity) {
+        return new CodeObj(new ArrayList<>(), new ArrayList<>(), name, new Counter(), new ArrayList<>(), arity);
     }
-    public static CodeObj newCoWithDebugSymbols(String name) {
-        return new CodeObj(new ArrayList<>(), new ArrayList<>(), name, new Counter(), new DebugArrayList<>());
+    public static CodeObj newCoWithDebugSymbols(String name, int arity) {
+        return new CodeObj(new ArrayList<>(), new ArrayList<>(), name, new Counter(), new DebugArrayList<>(), arity);
     }
 
     @Override
@@ -49,5 +50,9 @@ public record CodeObj(
 
     public void addLocal(final String varName) {
        locals().add(new LocalVar(varName, scopeLevel.value()));
+    }
+
+    public void addConst(final Value value) {
+        constants().add(value);
     }
 }

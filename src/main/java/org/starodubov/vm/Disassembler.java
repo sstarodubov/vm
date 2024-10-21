@@ -9,9 +9,9 @@ import static org.starodubov.vm.OpCodes.*;
 public class Disassembler {
 
     void printDisassemble(CodeObj co) {
+        System.out.printf("---------------Disassembly: %s ----------------------%n", co.name());
         System.out.println("constants= " + co.constants());
         System.out.println(global);
-        System.out.printf("---------------Disassembly: %s ----------------------%n", co.name());
         System.out.printf("%s%10s%30s\n", "offset", "bytes", "opcode");
         int offset = 0;
         while (offset < co.bytecode().size()) {
@@ -25,7 +25,7 @@ public class Disassembler {
         return switch (opcode) {
             case OP_JMP_IF_FALSE, OP_JMP -> disassembleJmp(co, opcode, offset);
             case OP_COMPARE -> disassembleCompare(co, opcode, offset);
-            case OP_HALT, OP_ADD, OP_SUB, OP_DIV, OP_MUL, OP_POP -> disassembleSimple(co, opcode, offset);
+            case OP_HALT, OP_ADD, OP_SUB, OP_DIV, OP_MUL, OP_POP, OP_RETURN -> disassembleSimple(co, opcode, offset);
             case OP_CONST -> disassembleConst(co, opcode, offset);
             case OP_SET_GLOBAL, OP_GET_GLOBAL -> disassembleGlobal(co, opcode, offset);
             case OP_SET_LOCAL, OP_GET_LOCAL -> disassembleLocal(co, opcode, offset);

@@ -501,35 +501,35 @@ public class VmTest {
     void exec() {
         var vm = new Vm();
         var result = vm.exec("""
-            (var count 0)
-            (begin
-                (set count (+ count 1))
-                (set count (+ count 1))
-                (set count (+ count 1))
-                (set count (+ count 1))
-                (set count (+ count 1))
-            )
-            count""");
+                (var count 0)
+                (begin
+                    (set count (+ count 1))
+                    (set count (+ count 1))
+                    (set count (+ count 1))
+                    (set count (+ count 1))
+                    (set count (+ count 1))
+                )
+                count""");
 
-        assertEquals(5L,result.obj());
+        assertEquals(5L, result.obj());
     }
 
     @Test
     void whileLoop() {
         var vm = new Vm();
         var result = vm.exec("""
-                (var i 10)
-                (var count 0)
-                (while (> i 0)
-                    (begin
-                        (set i (- i 1))
-                        (set count (+ count 1))
-                    )
-                )
-               count
-               """);
+                 (var i 10)
+                 (var count 0)
+                 (while (> i 0)
+                     (begin
+                         (set i (- i 1))
+                         (set count (+ count 1))
+                     )
+                 )
+                count
+                """);
 
-        assertEquals(10L,result.obj());
+        assertEquals(10L, result.obj());
     }
 
     @Test
@@ -537,15 +537,15 @@ public class VmTest {
         var vm = new Vm();
 
         var result = vm.exec("""
-               (var count 0)
-               (for (var i 0) (< i 10) (set i (+ i 1))
-                    (begin
-                        (set count (+ count 2))
-                    )
-               )
-               count
-               """);
-        assertEquals(20L,result.obj());
+                (var count 0)
+                (for (var i 0) (< i 10) (set i (+ i 1))
+                     (begin
+                         (set count (+ count 2))
+                     )
+                )
+                count
+                """);
+        assertEquals(20L, result.obj());
     }
 
     @Test
@@ -557,7 +557,7 @@ public class VmTest {
                 (square x)
                 """);
 
-       assertEquals(4L, result.obj());
+        assertEquals(4L, result.obj());
     }
 
     @Test
@@ -574,5 +574,46 @@ public class VmTest {
                 """);
 
         assertEquals(ValueTypes.VOID, result.type());
+    }
+
+    @Test
+    void simpleUserDefinedFunction() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                (def square2 (x) (* x x))
+                """);
+
+        assertEquals(9L, result.obj());
+    }
+
+    @Test
+    void simple2UserDefinedFunction() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                (def sum (a b)
+                    (begin
+                        (var x 10)
+                        (+ x (+ a b))
+                    )
+                )
+                """);
+
+        assertEquals(13L, result.obj());
+    }
+
+    @Test
+    void userDefinedFunctions() {
+        var vm = new Vm();
+        var result = vm.exec("""
+                (def factorial (x)
+                     (if (== 1 x)
+                         1
+                         (* x (factorial (- x 1)))
+                     )
+                )
+                (factorial 5)
+                """);
+
+        assertEquals(120L, result.obj());
     }
 }

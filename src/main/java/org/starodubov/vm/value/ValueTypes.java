@@ -6,5 +6,6 @@ public enum ValueTypes {
     CODE,
     BOOLEAN,
     NATIVE,
-    VOID
+    VOID,
+    FUNCTION
 }
