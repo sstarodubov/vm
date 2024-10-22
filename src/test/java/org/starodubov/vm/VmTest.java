@@ -408,7 +408,6 @@ public class VmTest {
     @Test
     void nativeFunctions() {
         var vm = new Vm();
-
         var result = vm.exec("""
                 (var x 2)
                 (square x)
