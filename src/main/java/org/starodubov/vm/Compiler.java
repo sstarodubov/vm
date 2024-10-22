@@ -153,47 +153,27 @@ public class Compiler {
                             pathJmpAddr(loopEndJmpAddr, loopEndAdrr);
                         }
                         case "def" -> {
-                            final Exp fnName = exp.list.get(1);
+                            final var fnName = exp.list.get(1).string;
                             final var params = exp.list.get(2).list;
                             final int arity = params.size();
-                            final CodeObj prevCo = co;
-                            //function code object
-                            final Value coValue = createCodeObjValue(fnName.string, arity);
-                            co = Value.asCode(coValue);
-                            //store co as constant
-                            prevCo.addConst(coValue);
-                            co.addLocal(fnName.string);
-
-                            for (int i = 0; i < arity; i++) {
-                                final String argName = params.get(i).string;
-                                co.addLocal(argName);
-                            }
-
-                            //gen body of a function
                             final var body = exp.list.get(3);
-                            gen(body);
-                            if (!isBlock(body)) {
-                                emit(OpCodes.OP_SCOPE_EXIT);
-                                emit(arity + 1);
-                            }
 
-                            emit(OpCodes.OP_RETURN);
-
-                            final FunctionObj fn = new FunctionObj(co);
-                            co = prevCo;
-                            co.addConst(new Value(ValueTypes.FUNCTION, fn));
-                            emit(OpCodes.OP_CONST);
-                            emit(co.constants().size() - 1);
+                            compileFunction(
+                                exp, fnName, params, body, arity
+                            );
 
                             if (isGlobalScope()) {
-                                global.define(fnName.string);
+                                global.define(fnName);
                                 emit(OpCodes.OP_SET_GLOBAL);
-                                emit(global.getGlobalIdx(fnName.string));
+                                emit(global.getGlobalIdx(fnName));
                             } else {
-                                co.addLocal(fnName.string);
+                                co.addLocal(fnName);
                                 emit(OpCodes.OP_SET_LOCAL);
-                                emit(co.getLocalIdx(fnName.string));
+                                emit(co.getLocalIdx(fnName));
                             }
+                        }
+                        case "lambda" -> {
+
                         }
                         // treat as a function
                         default -> {
@@ -232,6 +212,36 @@ public class Compiler {
                 }
             }
         }
+    }
+
+    private void compileFunction(Exp exp, String fnName, List<Exp> params, Exp body, int arity) {
+        final CodeObj prevCo = co;
+        //function code object
+        final Value coValue = createCodeObjValue(fnName, arity);
+        co = Value.asCode(coValue);
+        //store co as constant
+        prevCo.addConst(coValue);
+        co.addLocal(fnName);
+
+        for (int i = 0; i < arity; i++) {
+            final String argName = params.get(i).string;
+            co.addLocal(argName);
+        }
+
+        //gen body of a function
+        gen(body);
+        if (!isBlock(body)) {
+            emit(OpCodes.OP_SCOPE_EXIT);
+            emit(arity + 1);
+        }
+
+        emit(OpCodes.OP_RETURN);
+
+        final FunctionObj fn = new FunctionObj(co);
+        co = prevCo;
+        co.addConst(new Value(ValueTypes.FUNCTION, fn));
+        emit(OpCodes.OP_CONST);
+        emit(co.constants().size() - 1);
     }
 
     private Value createCodeObjValue(String name, int arity) {

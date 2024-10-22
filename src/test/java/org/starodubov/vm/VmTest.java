@@ -475,4 +475,17 @@ public class VmTest {
 
         assertEquals(120L, result.obj());
     }
+
+    @Test
+    void lambdaFunction() {
+       var vm = new Vm();
+       var result = vm.exec("""
+              (
+              (lambda (x) (* x x)) 2
+              
+              )
+              """);
+
+       assertEquals(4L, result.obj());
+    }
 }

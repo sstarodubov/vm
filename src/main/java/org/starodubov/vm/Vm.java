@@ -135,7 +135,6 @@ public class Vm {
                         final FunctionObj callee = Value.asFuntion(fnValue);
                         callStack.push(new Frame(ip, bp, fn));
                         fn = callee;
-                        // point bp on
                         bp = sp - argsCount - 1;
                         // jump to the beginning of the function code
                         ip = 0;
