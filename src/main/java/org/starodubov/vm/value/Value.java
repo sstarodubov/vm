@@ -7,7 +7,9 @@ public record Value(
 
     @Override
     public String toString() {
-        return "(type=%s, obj=%s)".formatted(type, obj);
+        return type == ValueTypes.VOID ?
+                "(type=%s)".formatted(type)
+                : "(type=%s, obj=%s)".formatted(type, obj);
     }
 
     public static final Value VOID = new Value(ValueTypes.VOID, new Object());

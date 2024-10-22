@@ -229,17 +229,17 @@ public class Vm {
         compiler = new Compiler(global, new Disassembler(global));
         stack = new Value[STACK_LIMIT];
 
-        addNativeFunction("square", () -> {
-            final long x = Value.asNumber(peek());
-            push(Value.number(x * x));
-        }, 1);
-
         addNativeFunction("println", () -> {
             final Value x = peek();
             System.out.println(x.obj());
             push(Value.VOID);
         }, 1);
 
+        addNativeFunction("print", () -> {
+            final Value x = peek();
+            System.out.print(x.obj());
+            push(Value.VOID);
+        }, 1);
     }
 
     // stack pointer
