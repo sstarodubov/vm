@@ -1,11 +1,12 @@
 package org.starodubov.vm;
 
-import org.starodubov.vm.value.CodeObj;
+import org.starodubov.vm.value.FunctionObj;
 import org.starodubov.vm.value.Value;
 import org.starodubov.vm.value.ValueTypes;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Deque;
 import java.util.function.BiFunction;
 
 import static org.starodubov.vm.OpCodes.*;
@@ -31,15 +32,16 @@ public class Vm {
     }
 
     public Value exec(String program) {
-        final CodeObj code = compile(program);
+        compile(program); //main fn
+        fn = compiler.getMainFn();
+        ip = 0;
+        sp = 0;
+        bp = sp;
         compiler.disassemble();
-        return exec(code.bytecode(), code.constants());
+        return exec();
     }
 
-    public Value exec(List<Integer> bytecode, List<Value> constants) {
-        this.code = bytecode;
-        this.constants = constants;
-
+    public Value exec() {
         int execOp;
         for (; ; ) {
             execOp = readByte();
@@ -47,7 +49,10 @@ public class Vm {
                 case OP_HALT -> {
                     return pop();
                 }
-                case OP_CONST -> push(getConst());
+                case OP_CONST -> {
+                    final Value v = getConst();
+                    push(v);
+                }
                 case OP_ADD -> {
                     final Value oper1 = pop(), oper2 = pop();
                     if (oper1.type() == ValueTypes.STRING && oper2.type() == ValueTypes.STRING) {
@@ -127,8 +132,20 @@ public class Vm {
                         popN(argsCount + 1);
                         push(result);
                     } else {
-                        // todo(user-defined function call)
+                        final FunctionObj callee = Value.asFuntion(fnValue);
+                        callStack.push(new Frame(ip, bp, fn));
+                        fn = callee;
+                        // point bp on
+                        bp = sp - argsCount - 1;
+                        // jump to the beginning of the function code
+                        ip = 0;
                     }
+                }
+                case OP_RETURN -> {
+                    final Frame callerFrame = callStack.pop();
+                    ip = callerFrame.ra();
+                    bp = callerFrame.bp();
+                    fn = callerFrame.fn();
                 }
                 default -> throw new IllegalStateException("unknown instruction 0x%X".formatted(execOp));
             }
@@ -176,10 +193,10 @@ public class Vm {
         };
     }
 
-    CodeObj compile(String program) {
+    void compile(String program) {
         try {
             final var ast = (Exp) parser.parse("(begin %s )".formatted(program));
-            return compiler.compile(ast);
+            compiler.compile(ast);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -192,18 +209,18 @@ public class Vm {
     }
 
     int readByte() {
-        return code.get(ip++);
+        return fn.co().bytecode().get(ip++);
     }
 
     Value getConst() {
-        return constants.get(readByte());
+        return fn.co().constants().get(readByte());
     }
 
     void setGlobalVars(GlobalVar... globalVars) {
         global.addConst(globalVars);
     }
 
-    void addNativeFuntion(final String name, Runnable fn, int arity) {
+    void addNativeFunction(final String name, Runnable fn, int arity) {
         global.addNativeFunction(name, fn, arity);
     }
 
@@ -213,12 +230,12 @@ public class Vm {
         compiler = new Compiler(global, new Disassembler(global));
         stack = new Value[STACK_LIMIT];
 
-        addNativeFuntion("square", () -> {
+        addNativeFunction("square", () -> {
             final long x = Value.asNumber(peek());
             push(Value.number(x * x));
         }, 1);
 
-        addNativeFuntion("println", () -> {
+        addNativeFunction("println", () -> {
             final Value x = peek();
             System.out.println(x.obj());
             push(Value.VOID);
@@ -235,11 +252,7 @@ public class Vm {
     // base pointer
     int bp = 0;
 
-    // bytecode
-    List<Integer> code;
-
-    // constant pool
-    List<Value> constants;
+    FunctionObj fn;
 
     static final int STACK_LIMIT = 512;
 
@@ -251,4 +264,5 @@ public class Vm {
 
     final private Global global;
 
+    final private Deque<Frame> callStack = new ArrayDeque<>();
 }

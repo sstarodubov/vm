@@ -11,28 +11,15 @@ import java.util.function.Function;
 
 public class Compiler {
 
-    public CodeObj compile(final Exp ast) {
+    public void compile(final Exp ast) {
         co = Value.asCode(createCodeObjValue("main", 0));
+        main = new FunctionObj(co);
         gen(ast);
         emit(OpCodes.OP_HALT);
-
-        return co;
     }
 
-    public CodeObj compileWithFlags(final Exp ast, String... flags) {
-        boolean debug = false;
-        for (var flag : flags) {
-            if (flag.equals("-d")) {
-                debug = true;
-            }
-        }
-
-        co = debug ? CodeObj.newCoWithDebugSymbols("main", 0) : CodeObj.newCo("main", 0);
-        gen(ast);
-        emit(OpCodes.OP_HALT);
-
-        return co;
-
+    public FunctionObj getMainFn() {
+       return main;
     }
 
     void gen(final Exp exp) {
@@ -394,6 +381,8 @@ public class Compiler {
     CodeObj co;
     Global global;
     List<CodeObj> codeObjs = new ArrayList<>();
+    FunctionObj main;
+
     final Disassembler disassembler;
 
     public Compiler(Global global, Disassembler disassembler) {
