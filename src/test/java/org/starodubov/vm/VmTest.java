@@ -488,4 +488,16 @@ public class VmTest {
 
        assertEquals(4L, result.obj());
     }
+
+    @Test
+    void assignLambdaFunction() {
+        var vm = new Vm();
+        var result = vm.exec("""
+              (var sum (lambda (a b) (+ a b)))
+              
+              (sum 2 3)
+              """);
+
+        assertEquals(5L, result.obj());
+    }
 }

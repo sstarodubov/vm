@@ -19,7 +19,7 @@ public class Compiler {
     }
 
     public FunctionObj getMainFn() {
-       return main;
+        return main;
     }
 
     void gen(final Exp exp) {
@@ -72,11 +72,23 @@ public class Compiler {
                             final int endBranchAddr = getOffset();
                             pathJmpAddr(endAddr, endBranchAddr);
                         }
+                        // declaration (var x (+ y 10))
                         case "var" -> {
 
                             // global vars
                             final var varName = exp.list.get(1).string;
-                            gen(exp.list.get(2));
+
+                            if (isLambda(exp.list.get(2))) {
+                                compileFunction(
+                                        exp.list.get(2),
+                                        varName,
+                                        exp.list.get(2).list.get(1).list,
+                                        exp.list.get(2).list.get(2)
+                                );
+                            } else {
+                                gen(exp.list.get(2));
+                            }
+
                             if (isGlobalScope()) {
                                 global.define(varName);
                                 emit(OpCodes.OP_SET_GLOBAL);
@@ -155,12 +167,9 @@ public class Compiler {
                         case "def" -> {
                             final var fnName = exp.list.get(1).string;
                             final var params = exp.list.get(2).list;
-                            final int arity = params.size();
                             final var body = exp.list.get(3);
 
-                            compileFunction(
-                                exp, fnName, params, body, arity
-                            );
+                            compileFunction(exp, fnName, params, body);
 
                             if (isGlobalScope()) {
                                 global.define(fnName);
@@ -173,21 +182,16 @@ public class Compiler {
                             }
                         }
                         case "lambda" -> {
+                            final var params = exp.list.get(1).list;
+                            final var body = exp.list.get(2);
 
+                            compileFunction(exp, "lambda", params, body);
                         }
                         // treat as a function
-                        default -> {
-                            //push function onto the stack
-                            gen(exp.list.getFirst());
-                            // push arguments
-                            for (int i = 1; i < exp.list.size(); i++) {
-                                gen(exp.list.get(i));
-                            }
-
-                            emit(OpCodes.OP_CALL);
-                            emit(exp.list.size() - 1);
-                        }
+                        default -> functionCall(exp);
                     }
+                } else {
+                    functionCall(exp);
                 }
             }
             case SYMBOL -> {
@@ -214,7 +218,24 @@ public class Compiler {
         }
     }
 
-    private void compileFunction(Exp exp, String fnName, List<Exp> params, Exp body, int arity) {
+    private boolean isLambda(Exp exp) {
+        return isTaggedList(exp, "lambda");
+    }
+
+    private void functionCall(Exp exp) {
+        //push function onto the stack
+        gen(exp.list.getFirst());
+        // push arguments
+        for (int i = 1; i < exp.list.size(); i++) {
+            gen(exp.list.get(i));
+        }
+
+        emit(OpCodes.OP_CALL);
+        emit(exp.list.size() - 1);
+    }
+
+    private void compileFunction(Exp exp, String fnName, List<Exp> params, Exp body) {
+        int arity = params.size();
         final CodeObj prevCo = co;
         //function code object
         final Value coValue = createCodeObjValue(fnName, arity);
@@ -259,10 +280,7 @@ public class Compiler {
     }
 
     private boolean isTaggedList(final Exp exp, final String tag) {
-        return exp.type == ExpType.LIST &&
-                !exp.list.isEmpty() &&
-                exp.list.getFirst().type == ExpType.SYMBOL &&
-                exp.list.getFirst().string.equals(tag);
+        return exp.type == ExpType.LIST && !exp.list.isEmpty() && exp.list.getFirst().type == ExpType.SYMBOL && exp.list.getFirst().string.equals(tag);
     }
 
     private boolean isBlock(final Exp exp) {
@@ -282,7 +300,7 @@ public class Compiler {
         if (varsCount > 0 || co.arity() > 0) {
             emit(OpCodes.OP_SCOPE_EXIT);
             if (isFunctionBody()) {
-                 varsCount += co.arity() + 1;
+                varsCount += co.arity() + 1;
             }
             emit(varsCount);
         }
@@ -330,8 +348,7 @@ public class Compiler {
         emit(opCode);
     }
 
-    <T> int constIdx(ValueTypes type, Function<Value, T> asFn,
-                     T val, Function<T, Value> convertFn) {
+    <T> int constIdx(ValueTypes type, Function<Value, T> asFn, T val, Function<T, Value> convertFn) {
         for (int i = 0; i < co.constants().size(); i++) {
             if (co.constants().get(i).type() != type) {
                 continue;
