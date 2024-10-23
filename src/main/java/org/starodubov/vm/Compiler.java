@@ -95,14 +95,13 @@ public class Compiler {
                                 emit(global.getGlobalIdx(varName));
                             } else {
                                 co.addLocal(varName);
-                                emit(OpCodes.OP_SET_LOCAL);
-                                emit(co.getLocalIdx(varName));
                             }
                         }
                         case "set" -> {
                             final var varName = exp.list.get(1).string;
                             final var localIdx = co.getLocalIdx(varName);
                             if (localIdx != -1) {
+                                gen(exp.list.get(2));
                                 emit(OpCodes.OP_SET_LOCAL);
                                 emit(localIdx);
                             } else {
@@ -177,8 +176,6 @@ public class Compiler {
                                 emit(global.getGlobalIdx(fnName));
                             } else {
                                 co.addLocal(fnName);
-                                emit(OpCodes.OP_SET_LOCAL);
-                                emit(co.getLocalIdx(fnName));
                             }
                         }
                         case "lambda" -> {

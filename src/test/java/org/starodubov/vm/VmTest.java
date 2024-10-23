@@ -499,4 +499,23 @@ public class VmTest {
 
         assertEquals(5L, result.obj());
     }
+
+    @Test
+    void bytecodeOptimization() {
+        var vm = new Vm();
+        var result = vm.exec("""
+              (var x 1)
+              (var z 2)
+              (begin
+                (var a 10)
+                (var b 20)
+                (set a 100)
+                (+ a b)
+              )
+              
+              """);
+
+        assertEquals(120L, result.obj());
+    }
+
 }
